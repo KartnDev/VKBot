@@ -1,3 +1,4 @@
+
 from vk_api.longpoll import VkLongPoll, VkEventType
 from Database.CommandDbWorker import CommandWorker
 from datetime import datetime
@@ -17,7 +18,7 @@ import get_erish
 import get_ishtar
 import cumshot
 import settings
-
+import logging
 
 # load all commands
 
@@ -37,9 +38,7 @@ def send_message(vk_session, id_type, id, message=None, attachment=None, keyboar
 
 for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW:
-        print('Время: ' + str(datetime.strftime(datetime.now(), "%H:%M:%S")))
-        print('Текст ПИДОРАСА: ' + str(event.text))
-        print(event.user_id)
+        logging.info("message from user" + str(event.extra_values['from']) + "MSG: " + event.text)
         response = event.text
 
         for item in commands:
@@ -164,6 +163,8 @@ for event in longpoll.listen():
         if spaced_words[0] == '!addcom' and len(spaced_words) >= 3:
             if spaced_words[1] == spaced_words[2]:
                 send_message(vk_session, 'chat_id', event.chat_id, "Нельзя добавить эхо-комманду")
+            elif spaced_words[1] in list(i['name'] for i in commands):
+                send_message(vk_session, 'chat_id', event.chat_id, "Нельзя добавить существуюую комманду")
             else:
                 command_worker.insert(10, spaced_words[1], ' '.join(spaced_words[2:]))
                 commands.insert(0, {
