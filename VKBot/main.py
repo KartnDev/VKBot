@@ -39,7 +39,7 @@ def send_message(vk_session, id_type, id, message=None, attachment=None, keyboar
 for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW:
         #TODO не еш подумой
-        logging.info("message from user id" + str(event.extra_values['from']) + "MSG: " + event.text)
+        #logging.info("message from user id" + str(event.extra_values['from']) + "MSG: " + event.text)
         response = event.text
 
         for item in commands:
