@@ -1,8 +1,7 @@
-import json
-
 from vk_api.longpoll import VkLongPoll, VkEventType
-import vk_api
+from Database.CommandDbWorker import CommandWorker
 from datetime import datetime
+import vk_api
 import random
 import get_pictures
 import get_pictures2
@@ -18,7 +17,7 @@ import get_erish
 import get_ishtar
 import cumshot
 import settings
-from Database.CommandDbWorker import CommandWorker
+
 
 # load all commands
 
