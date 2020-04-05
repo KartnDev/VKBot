@@ -1,6 +1,6 @@
-
 from vk_api.longpoll import VkLongPoll, VkEventType
 from Database.CommandDbWorker import CommandWorker
+from Database.UserDbWorker import UserWorker
 from datetime import datetime
 import vk_api
 import random
@@ -20,10 +20,14 @@ import cumshot
 import settings
 import logging
 
-# load all commands
+# load data from database
+
 
 command_worker = CommandWorker()
+user_worker = UserWorker()
+
 commands = command_worker.select_all()
+users = user_worker.select_all()
 
 vk_session = vk_api.VkApi(token=settings.get_token())
 session_api = vk_session.get_api()
@@ -38,8 +42,8 @@ def send_message(vk_session, id_type, id, message=None, attachment=None, keyboar
 
 for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW:
-        #TODO не еш подумой
-        #logging.info("message from user id" + str(event.extra_values['from']) + " with MSG: " + event.text)
+        # TODO не еш подумой
+        # logging.info("message from user id" + str(event.extra_values['from']) + " with MSG: " + event.text)
         response = event.text
 
         for item in commands:
@@ -138,9 +142,10 @@ for event in longpoll.listen():
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': "@id" + str(val), 'random_id': 0})
         if event.text.lower() == "!gvn":
-            huy = vk_session.method('video.get',{'owner_id':'-164489758', 'count':200, 'offset':1})['items']
+            huy = vk_session.method('video.get', {'owner_id': '-164489758', 'count': 200, 'offset': 1})['items']
             qwert = random.choice(list(i for i in huy))
-            vk_session.method('messages.send', {'chat_id': event.chat_id, 'message': 'Держи gvn!', 'random_id': 0, "attachment": 'video' + str(-164489758) + '_' + str(qwert['id'])}) 
+            vk_session.method('messages.send', {'chat_id': event.chat_id, 'message': 'Держи gvn!', 'random_id': 0,
+                                                "attachment": 'video' + str(-164489758) + '_' + str(qwert['id'])})
 
         spaced_words = str(response).split(' ')
 
@@ -158,6 +163,17 @@ for event in longpoll.listen():
                                                                               "Да, это прям 100%",
                                                                               "нет,ты чё шизоид?"]))
                                                            + ' ', 'random_id': 0})
+
+        """ Добавление и редактирование в список пользователей """
+        if spaced_words[0] == '!regme' and len(spaced_words) == 2:
+            if spaced_words[1] not in list(i['association'] for i in users):
+                user_worker.insert(1, event.extra['from'], spaced_words[1])
+                commands.insert(0, {
+                    'access_level': 1,
+                    'vk_id': event.extra['from'],
+                    'value': spaced_words[1]})
+            else:
+                send_message(vk_session, 'chat_id', event.chat_id, "Ассоциация занята")
 
         """ Добавление и удаление комманд """
         # TODO добавить уровни и контроль юзеров

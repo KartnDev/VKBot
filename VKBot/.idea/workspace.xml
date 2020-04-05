@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b53b088d-a04a-4232-be53-321f3cc4b3dc" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/dictionaries/dmutp.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Database/UserDbWorker.py" beforeDir="false" afterPath="$PROJECT_DIR$/Database/UserDbWorker.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -41,11 +43,13 @@
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\dmutp\source\PyWorkspace\VKBot\VKBot\Configurations" />
+      <recent name="C:\Users\dmutp\source\PyWorkspace\VKBot\VKBot" />
+      <recent name="C:\Users\dmutp\source\PyWorkspace\VKBot\VKBot\Database" />
       <recent name="C:\Users\Admin\PycharmProjects\VKBOT" />
     </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\dmutp\source\PyWorkspace\VKBot\VKBot\Database" />
+    <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Admin\PycharmProjects\VKBOT" />
     </key>
   </component>
@@ -179,6 +183,7 @@
       <workItem from="1585772053601" duration="2553000" />
       <workItem from="1585819443752" duration="30963000" />
       <workItem from="1585940075095" duration="2780000" />
+      <workItem from="1586097689663" duration="4055000" />
     </task>
     <servers />
   </component>
