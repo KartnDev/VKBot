@@ -44,6 +44,7 @@ for event in longpoll.listen():
     #if event.type == VkEventType.MESSAGE_EDIT:
 	#print('Время: ' + str(datetime.strftime(datetime.now(), "%H:%M:%S")))
 	#print('Изменили сообщение: ' + str(event.text))
+	#event.text = ''
     if event.type == VkEventType.MESSAGE_NEW:
         # TODO не еш подумой
         # logging.info("message from user id" + str(event.extra_values['from']) + " with MSG: " + event.text)
