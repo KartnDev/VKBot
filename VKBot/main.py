@@ -5,18 +5,6 @@ from datetime import datetime
 import vk_api
 import random
 import get_pictures
-import get_pictures2
-import get_hentai
-import get_itpedia
-import get_fateprikol
-import get_fateart
-import get_3d
-import get_kuk
-import get_rin
-import get_rin18
-import get_erish
-import get_ishtar
-import cumshot
 import settings
 import logging
 
@@ -69,40 +57,42 @@ for event in longpoll.listen():
                          '•!палата шевцова \n •!хуесосина \n •!колда \n •!музыка \n •!радмир \n •!клоун',
                          attachment='photo564230346_457239307')
         if event.text == "!лоли":
-            attachment = get_pictures.get(vk_session, -127518015, session_api)
+            code = [-127518015, -157516431]
+            attachment = get_pictures.get(vk_session, random.choice(code), session_api)
             vk_session.method('messages.send', {'chat_id': event.chat_id, 'message': 'Держи девочку!', 'random_id': 0,
                                                 "attachment": attachment})
         if event.text == "!юри":
-            attachment = get_pictures2.get(vk_session, -153284406, session_api)
+            code = [-153284406, -157516431]
+            attachment = get_picture.get(vk_session, random.choice(code), session_api)
             vk_session.method('messages.send', {'chat_id': event.chat_id, 'message': 'держи лесбух!', 'random_id': 0,
                                                 "attachment": attachment})
         if event.text == "!ахегао":
-            attachment = get_hentai.get(vk_session, -128535882, session_api)
+            attachment = get_picture.get(vk_session, -128535882, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи ахегао, конченый извращенец!',
                                'random_id': 0, "attachment": attachment})
         if event.text == "!палата шевцова":
-            attachment = get_itpedia.get(vk_session, -88245281, session_api)
+            attachment = get_picture.get(vk_session, -88245281, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи мем из палаты Шевцова!', 'random_id': 0,
                                "attachment": attachment})
         if event.text == "!фейт прикол":
-            attachment = get_fateprikol.get(vk_session, -183563128, session_api)
+            attachment = get_picture.get(vk_session, -183563128, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи мем из группы Fate/GrandПрикол!',
                                'random_id': 0, "attachment": attachment})
         if event.text == "!фейт арт":
-            attachment = get_fateart.get(vk_session, -191752227, session_api)
+            attachment = get_picture.get(vk_session, -191752227, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи арт из группы far side of the moon!',
                                'random_id': 0, "attachment": attachment})
         if event.text == "!3д мусор":
-            attachment = get_3d.get(vk_session, -70232735, session_api)
+            attachment = get_picture.get(vk_session, -70232735, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи свой 3д мусор!', 'random_id': 0,
                                "attachment": attachment})
         if event.text == "!кукла":
-            attachment = get_kuk.get(vk_session, -186765691, session_api)
+            attachment = get_picture.get(vk_session, -186765691, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи свою куклу, куклоёб!', 'random_id': 0,
                                "attachment": attachment})
@@ -118,16 +108,17 @@ for event in longpoll.listen():
             vk_session.method('messages.send', {'chat_id': event.chat_id, 'message': 'держи Тосаку!', 'random_id': 0,
                                                 "attachment": attachment})
         if event.text == "!тосака2":
-            attachment = get_rin18.get(vk_session, -119603422, session_api)
+            attachment = get_picture.get(vk_session, -119603422, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи хентайную Тосаку!', 'random_id': 0,
                                "attachment": attachment})
         if event.text == "!иштар":
-            attachment = get_ishtar.get(vk_session, -119603422, session_api)
+            code = [-119603422, -88245281]
+            attachment = get_picture.get(vk_session, random.choice(code), session_api)
             vk_session.method('messages.send', {'chat_id': event.chat_id, 'message': 'держи Иштар!', 'random_id': 0,
                                                 "attachment": attachment})
         if event.text == "!эриш":
-            attachment = get_erish.get(vk_session, -119603422, session_api)
+            attachment = get_picture.get(vk_session, -119603422, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи Эрешкигаль!', 'random_id': 0,
                                "attachment": attachment})
@@ -137,7 +128,7 @@ for event in longpoll.listen():
             send_message(vk_session, 'chat_id', event.chat_id, attachment='photo564230346_457239422')
 
         if event.text == "!камшот":
-            attachment = cumshot.get(vk_session, -2343758, session_api)
+            attachment = get_picture.get(vk_session, -2343758, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи рандом скриншот!', 'random_id': 0,
                                "attachment": attachment})
