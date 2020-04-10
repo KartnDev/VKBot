@@ -74,43 +74,29 @@ for event in longpoll.listen():
         if event.text == "!лоли":
             code = [-127518015, -157516431]
             attachment = get_pictures(vk_session, random.choice(code), session_api)
-            vk_session.method('messages.send', {'chat_id': event.chat_id, 'message': 'Держи девочку!', 'random_id': 0,
-                                                "attachment": attachment})
+            send_message(vk_session, 'peer_id', event.peer_id, 'Держи девочку!', attachment)
         if event.text == "!юри":
             code = [-153284406, -157516431]
             attachment = get_pictures(vk_session, random.choice(code), session_api)
-            vk_session.method('messages.send', {'chat_id': event.chat_id, 'message': 'держи лесбух!', 'random_id': 0,
-                                                "attachment": attachment})
+            send_message(vk_session, 'peer_id', event.peer_id, 'Держи лесбух!', attachment)
         if event.text == "!ахегао":
             attachment = get_pictures(vk_session, -128535882, session_api)
-            vk_session.method('messages.send',
-                              {'chat_id': event.chat_id, 'message': 'держи ахегао, конченый извращенец!',
-                               'random_id': 0, "attachment": attachment})
+            send_message(vk_session, 'peer_id', event.peer_id, 'Держи ахегао, конченый извращенец!', attachment)
         if event.text == "!палата шевцова":
             attachment = get_pictures(vk_session, -88245281, session_api)
-            vk_session.method('messages.send',
-                              {'chat_id': event.chat_id, 'message': 'держи мем из палаты Шевцова!', 'random_id': 0,
-                               "attachment": attachment})
+            send_message(vk_session, 'peer_id', event.peer_id, 'Держи мем из палаты Шевцова!', attachment)
         if event.text == "!фейт прикол":
             attachment = get_pictures(vk_session, -183563128, session_api)
-            vk_session.method('messages.send',
-                              {'chat_id': event.chat_id, 'message': 'держи мем из группы Fate/GrandПрикол!',
-                               'random_id': 0, "attachment": attachment})
+            send_message(vk_session, 'peer_id', event.peer_id, 'Держи мем из группы Fate/GrandПрикол!', attachment)
         if event.text == "!фейт арт":
             attachment = get_pictures(vk_session, -191752227, session_api)
-            vk_session.method('messages.send',
-                              {'chat_id': event.chat_id, 'message': 'держи арт из группы far side of the moon!',
-                               'random_id': 0, "attachment": attachment})
+            send_message(vk_session, 'peer_id', event.peer_id, 'Держи арт из группы far side of the moon!', attachment)
         if event.text == "!3д мусор":
             attachment = get_pictures(vk_session, -70232735, session_api)
-            vk_session.method('messages.send',
-                              {'chat_id': event.chat_id, 'message': 'держи свой 3д мусор!', 'random_id': 0,
-                               "attachment": attachment})
+            send_message(vk_session, 'peer_id', event.peer_id, 'Держи свой 3д мусор!', attachment)
         if event.text == "!кукла":
             attachment = get_pictures(vk_session, -186765691, session_api)
-            vk_session.method('messages.send',
-                              {'chat_id': event.chat_id, 'message': 'держи свою куклу, куклоёб!', 'random_id': 0,
-                               "attachment": attachment})
+            send_message(vk_session, 'peer_id', event.peer_id, 'Держи свою куклу, куклоёб!', attachment)
         if event.text == "!хуесосина":
             send_message(vk_session, 'chat_id', event.chat_id, attachment='video210923765_456239281')
         if event.text == "!колда":
@@ -120,23 +106,17 @@ for event in longpoll.listen():
                          attachment='audio564230346_456239018,audio564230346_456239019,audio564230346_456239017')
         if event.text == "!тосака":
             attachment = get_rin.get(vk_session, -119603422, session_api)
-            vk_session.method('messages.send', {'chat_id': event.chat_id, 'message': 'держи Тосаку!', 'random_id': 0,
-                                                "attachment": attachment})
+            send_message(vk_session, 'peer_id', event.peer_id, 'Держи Тосаку!', attachment)
         if event.text == "!тосака2":
             attachment = get_pictures(vk_session, -119603422, session_api)
-            vk_session.method('messages.send',
-                              {'chat_id': event.chat_id, 'message': 'держи хентайную Тосаку!', 'random_id': 0,
-                               "attachment": attachment})
+            send_message(vk_session, 'peer_id', event.peer_id, 'Держи хентайную Тосаку!', attachment)
         if event.text == "!иштар":
             code = [-119603422, -88245281]
             attachment = get_pictures(vk_session, random.choice(code), session_api)
-            vk_session.method('messages.send', {'chat_id': event.chat_id, 'message': 'держи Иштар!', 'random_id': 0,
-                                                "attachment": attachment})
+            send_message(vk_session, 'peer_id', event.peer_id, 'Держи Иштар!', attachment)
         if event.text == "!эриш":
             attachment = get_pictures(vk_session, -119603422, session_api)
-            vk_session.method('messages.send',
-                              {'chat_id': event.chat_id, 'message': 'держи Эрешкигаль!', 'random_id': 0,
-                               "attachment": attachment})
+            send_message(vk_session, 'peer_id', event.peer_id, 'Держи Эрешкигаль!', attachment)
         if event.text == "!радмир":
             send_message(vk_session, 'chat_id', event.chat_id, attachment='photo564230346_457239374')
         if event.text == "!клоун":
@@ -144,35 +124,30 @@ for event in longpoll.listen():
 
         if event.text == "!камшот":
             attachment = get_pictures(vk_session, -2343758, session_api)
-            vk_session.method('messages.send',
-                              {'chat_id': event.chat_id, 'message': 'держи рандом скриншот!', 'random_id': 0,
-                               "attachment": attachment})
+            send_message(vk_session, 'peer_id', event.peer_id, 'Держи рандом скриншот!', attachment)
         if event.text == "!кто":
-            val = random.choice((vk_session.method('messages.getChat', {'chat_id': event.chat_id}))['users'])
-            vk_session.method('messages.send',
-                              {'chat_id': event.chat_id, 'message': "@id" + str(val), 'random_id': 0})
+            if event.from_chat:
+                val = random.choice((vk_session.method('messages.getChat', {'chat_id': event.chat_id}))['users'])
+                send_message(vk_session, 'peer_id', event.peer_id, "@id" + str(val))
         if event.text.lower() == "!gvn":
             huy = vk_session.method('video.get', {'owner_id': '-164489758', 'count': 200, 'offset': 1})['items']
             qwert = random.choice(list(i for i in huy))
-            vk_session.method('messages.send', {'chat_id': event.chat_id, 'message': 'Держи gvn!', 'random_id': 0,
-                                                "attachment": 'video' + str(-164489758) + '_' + str(qwert['id'])})
+            send_message(vk_session, 'peer_id', event.peer_id, 'Держи gvn!',attachment='video' + str(-164489758) + '_' + str(qwert['id']))
 
         spaced_words = str(response).split(' ')
 
         if spaced_words[0] == '!шанс' and len(spaced_words) > 1:
-            vk_session.method('messages.send', {'chat_id': event.chat_id,
-                                                'message': 'Шанс того, что ' + ' '.join(spaced_words[1:]) + ' - '
-                                                           + str(random.randint(1, 100)) + '%', 'random_id': 0})
+            send_message(vk_session, 'peer_id', event.peer_id,
+                         'Шанс того, что ' + ' '.join(spaced_words[1:]) + ' - '
+                         + str(random.randint(1, 100)) + '%')
         if spaced_words[0] == '!шар':
-            vk_session.method('messages.send', {'chat_id': event.chat_id,
-                                                'message': 'Мойт ответ - ' +
-                                                           str(random.choice(["Да",
-                                                                              "Нет",
-                                                                              "Скорее всего, но это не точно",
-                                                                              "В душе не ебу если честно",
-                                                                              "Да, это прям 100%",
-                                                                              "нет,ты чё шизоид?"]))
-                                                           + ' ', 'random_id': 0})
+            send_message(vk_session, 'peer_id', event.peer_id, 'Мой ответ - ' +
+                         str(random.choice(["Да",
+                                            "Нет",
+                                            "Скорее всего, но это не точно",
+                                            "В душе не ебу если честно",
+                                            "Да, это прям 100%",
+                                            "нет,ты чё шизоид?"])) + ' ')
 
         """ Добавление и редактирование в список пользователей """
         if spaced_words[0] == '!regme' and len(spaced_words) == 2:
