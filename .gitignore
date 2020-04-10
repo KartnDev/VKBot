@@ -2,3 +2,5 @@
 *.json
 .venv
 VKBot/settings.py
+VKBot/.idea/VKBot.iml
+*.xml
