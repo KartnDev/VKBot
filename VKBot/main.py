@@ -4,7 +4,6 @@ from Database.UserDbWorker import UserWorker
 from datetime import datetime
 import vk_api
 import random
-import get_pictures
 import settings
 import logging
 
@@ -27,6 +26,22 @@ def send_message(vk_session, id_type, id, message=None, attachment=None, keyboar
                       {id_type: id, 'message': message, 'random_id': random.randint(-2147483648, +2147483648),
                        "attachment": attachment, 'keyboard': keyboard})
 
+def get_pictures(vk_session, id_group, vk):
+    try:
+        attachment = ''
+        max_num = vk.photos.get(owner_id=id_group, album_id='wall', count=0)['count']
+        num = random.randint(1, max_num)
+        pictures = vk.photos.get(owner_id=str( id_group), album_id='wall', count=1, offset=num)['items']
+        buf = []
+        for element in pictures:
+            buf.append('photo' + str( id_group) + '_' + str(element['id']))
+        print(buf)
+        attachment = ','.join(buf)
+        print(type(attachment))
+        print(attachment)
+        return attachment
+    except:
+        return get_pictures(vk_session,  id_group, vk)
 
 for event in longpoll.listen():
     #if event.type == VkEventType.MESSAGE_EDIT:
@@ -58,41 +73,41 @@ for event in longpoll.listen():
                          attachment='photo564230346_457239307')
         if event.text == "!лоли":
             code = [-127518015, -157516431]
-            attachment = get_pictures.get(vk_session, random.choice(code), session_api)
+            attachment = get_pictures(vk_session, random.choice(code), session_api)
             vk_session.method('messages.send', {'chat_id': event.chat_id, 'message': 'Держи девочку!', 'random_id': 0,
                                                 "attachment": attachment})
         if event.text == "!юри":
             code = [-153284406, -157516431]
-            attachment = get_picture.get(vk_session, random.choice(code), session_api)
+            attachment = get_pictures(vk_session, random.choice(code), session_api)
             vk_session.method('messages.send', {'chat_id': event.chat_id, 'message': 'держи лесбух!', 'random_id': 0,
                                                 "attachment": attachment})
         if event.text == "!ахегао":
-            attachment = get_picture.get(vk_session, -128535882, session_api)
+            attachment = get_pictures(vk_session, -128535882, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи ахегао, конченый извращенец!',
                                'random_id': 0, "attachment": attachment})
         if event.text == "!палата шевцова":
-            attachment = get_picture.get(vk_session, -88245281, session_api)
+            attachment = get_pictures(vk_session, -88245281, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи мем из палаты Шевцова!', 'random_id': 0,
                                "attachment": attachment})
         if event.text == "!фейт прикол":
-            attachment = get_picture.get(vk_session, -183563128, session_api)
+            attachment = get_pictures(vk_session, -183563128, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи мем из группы Fate/GrandПрикол!',
                                'random_id': 0, "attachment": attachment})
         if event.text == "!фейт арт":
-            attachment = get_picture.get(vk_session, -191752227, session_api)
+            attachment = get_pictures(vk_session, -191752227, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи арт из группы far side of the moon!',
                                'random_id': 0, "attachment": attachment})
         if event.text == "!3д мусор":
-            attachment = get_picture.get(vk_session, -70232735, session_api)
+            attachment = get_pictures(vk_session, -70232735, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи свой 3д мусор!', 'random_id': 0,
                                "attachment": attachment})
         if event.text == "!кукла":
-            attachment = get_picture.get(vk_session, -186765691, session_api)
+            attachment = get_pictures(vk_session, -186765691, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи свою куклу, куклоёб!', 'random_id': 0,
                                "attachment": attachment})
@@ -108,17 +123,17 @@ for event in longpoll.listen():
             vk_session.method('messages.send', {'chat_id': event.chat_id, 'message': 'держи Тосаку!', 'random_id': 0,
                                                 "attachment": attachment})
         if event.text == "!тосака2":
-            attachment = get_picture.get(vk_session, -119603422, session_api)
+            attachment = get_pictures(vk_session, -119603422, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи хентайную Тосаку!', 'random_id': 0,
                                "attachment": attachment})
         if event.text == "!иштар":
             code = [-119603422, -88245281]
-            attachment = get_picture.get(vk_session, random.choice(code), session_api)
+            attachment = get_pictures(vk_session, random.choice(code), session_api)
             vk_session.method('messages.send', {'chat_id': event.chat_id, 'message': 'держи Иштар!', 'random_id': 0,
                                                 "attachment": attachment})
         if event.text == "!эриш":
-            attachment = get_picture.get(vk_session, -119603422, session_api)
+            attachment = get_pictures(vk_session, -119603422, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи Эрешкигаль!', 'random_id': 0,
                                "attachment": attachment})
@@ -128,7 +143,7 @@ for event in longpoll.listen():
             send_message(vk_session, 'chat_id', event.chat_id, attachment='photo564230346_457239422')
 
         if event.text == "!камшот":
-            attachment = get_picture.get(vk_session, -2343758, session_api)
+            attachment = get_pictures(vk_session, -2343758, session_api)
             vk_session.method('messages.send',
                               {'chat_id': event.chat_id, 'message': 'держи рандом скриншот!', 'random_id': 0,
                                "attachment": attachment})
