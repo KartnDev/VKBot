@@ -1,30 +1,36 @@
 from vk_api.longpoll import VkLongPoll, VkEventType
+
 from Database.CommandDbWorker import CommandWorker
 from Database.UserDbWorker import UserWorker
-from datetime import datetime
+from StartupLoader.StartupLoader import StartupLoader
 import vk_api
 import random
-import settings
-import logging
-
-# load data from database
 
 
-command_worker = CommandWorker()
-user_worker = UserWorker()
+# Предзагрузка конфигураций
+config_loader = StartupLoader('config.JSON')
 
-commands = command_worker.select_all()
-users = user_worker.select_all()
+admin_id_int = config_loader.get_admin_id()
 
-vk_session = vk_api.VkApi(token=settings.get_token())
+# Загрузка листов из БД
+users = config_loader.load_users_list()
+commands = config_loader.load_commands_list()
+
+# Инициализация vk_api
+vk_session = vk_api.VkApi(token= config_loader.get_vk_token())
 session_api = vk_session.get_api()
-longpoll = VkLongPoll(vk_session)
+long_poll = VkLongPoll(vk_session)
+
+# Создание БД воркеров
+user_worker = UserWorker()
+command_worker = CommandWorker()
 
 
 def send_message(vk_session, id_type, id, message=None, attachment=None, keyboard=None):
     vk_session.method('messages.send',
                       {id_type: id, 'message': message, 'random_id': random.randint(-2147483648, +2147483648),
                        "attachment": attachment, 'keyboard': keyboard})
+
 
 def get_pictures(vk_session, id_group, vk):
     try:
@@ -43,11 +49,8 @@ def get_pictures(vk_session, id_group, vk):
     except:
         return get_pictures(vk_session,  id_group, vk)
 
-for event in longpoll.listen():
-    #if event.type == VkEventType.MESSAGE_EDIT:
-	#print('Время: ' + str(datetime.strftime(datetime.now(), "%H:%M:%S")))
-	#print('Изменили сообщение: ' + str(event.text))
-	#event.text = ''
+
+for event in long_poll.listen():
     if event.type == VkEventType.MESSAGE_NEW:
         # TODO не еш подумой
         # logging.info("message from user id" + str(event.extra_values['from']) + " with MSG: " + event.text)
@@ -105,7 +108,7 @@ for event in longpoll.listen():
             send_message(vk_session, 'chat_id', event.chat_id,
                          attachment='audio564230346_456239018,audio564230346_456239019,audio564230346_456239017')
         if event.text == "!тосака":
-            attachment = get_rin.get(vk_session, -119603422, session_api)
+            attachment = get_pictures(vk_session, -119603422, session_api)
             send_message(vk_session, 'peer_id', event.peer_id, 'Держи Тосаку!', attachment)
         if event.text == "!тосака2":
             attachment = get_pictures(vk_session, -119603422, session_api)

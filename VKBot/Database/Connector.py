@@ -7,14 +7,7 @@ class DbSession:
     """Метод(функция) инициализации класса
         в аргументы принимает модель таблицы с котоорой будет работать"""
     def __init__(self, model: BaseModel):
-        logging.basicConfig(filename="logBook.log", level=logging.INFO)
-
         self.model = model
-        try:
-            dbhandle.connect()
-        except InternalError as ex:
-            logging.error("exception were taken " + ex.with_traceback())
-            raise ex
 
     """Методы вызывает создание таблицы внутри субд если таковой нету
         не вызывать если таблица уже есть
