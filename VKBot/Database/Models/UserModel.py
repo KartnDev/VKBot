@@ -9,3 +9,8 @@ class UserModel(BaseModel):
     class Meta:
         db_table = "categories"         # название таблицы
         order_by = ('created_at',)      # как сортированы внутри субд
+
+
+
+
+
