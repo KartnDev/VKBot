@@ -1,5 +1,10 @@
+import logging
+
+from peewee import InternalError
+
 from Database.Connector import DbSession
 from Database.Models import UserModel
+from Database.Models.BaseModel import dbhandle
 
 
 class UserWorker:
@@ -9,6 +14,7 @@ class UserWorker:
     def select_all(self):
         data = self.db.select_all_table()
         items = []
+        print(data)
         for item in data:
             items.append({
                 'access_level': item.access_level,

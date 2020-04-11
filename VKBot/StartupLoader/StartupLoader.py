@@ -1,5 +1,6 @@
 import json
 import logging
+import pathlib
 
 from peewee import InternalError
 
@@ -11,13 +12,7 @@ from Database.UserDbWorker import UserWorker
 class StartupLoader:
     def __init__(self, config_name: str):
         logging.basicConfig(filename="logBook.log", level=logging.INFO)
-        try:
-            dbhandle.connect()
-        except InternalError as ex:
-            logging.error("exception were taken " + ex.with_traceback())
-            raise ex
-
-        with open('StartLoader\\' + config_name) as json_file:
+        with open(str(pathlib.Path().absolute()) + '\\StartupLoader\\' + config_name) as json_file:
             self.data = json.load(json_file)
 
     def load_users_list(self) -> list:

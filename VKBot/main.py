@@ -1,6 +1,8 @@
 from vk_api.longpoll import VkLongPoll, VkEventType
 
+from Database import Connector
 from Database.CommandDbWorker import CommandWorker
+from Database.Models import BaseModel
 from Database.UserDbWorker import UserWorker
 from StartupLoader.StartupLoader import StartupLoader
 import vk_api
@@ -12,18 +14,21 @@ config_loader = StartupLoader('config.JSON')
 
 admin_id_int = config_loader.get_admin_id()
 
+# Создание БД воркеров
+#user_worker = UserWorker()
+command_worker = CommandWorker()
+
 # Загрузка листов из БД
-users = config_loader.load_users_list()
-commands = config_loader.load_commands_list()
+commands = command_worker.select_all()
+#users = user_worker.select_all()
+
 
 # Инициализация vk_api
-vk_session = vk_api.VkApi(token= config_loader.get_vk_token())
+vk_session = vk_api.VkApi(token=config_loader.get_vk_token())
 session_api = vk_session.get_api()
 long_poll = VkLongPoll(vk_session)
 
-# Создание БД воркеров
-user_worker = UserWorker()
-command_worker = CommandWorker()
+
 
 
 def send_message(vk_session, id_type, id, message=None, attachment=None, keyboard=None):
@@ -153,15 +158,15 @@ for event in long_poll.listen():
                                             "нет,ты чё шизоид?"])) + ' ')
 
         """ Добавление и редактирование в список пользователей """
-        if spaced_words[0] == '!regme' and len(spaced_words) == 2:
-            if spaced_words[1] not in list(i['association'] for i in users):
-                user_worker.insert(1, event.extra['from'], spaced_words[1])
-                commands.insert(0, {
-                    'access_level': 1,
-                    'vk_id': event.extra['from'],
-                    'value': spaced_words[1]})
-            else:
-                send_message(vk_session, 'chat_id', event.chat_id, "Ассоциация занята")
+        #if spaced_words[0] == '!regme' and len(spaced_words) == 2:
+          #  if spaced_words[1] not in list(i['association'] for i in users):
+         #       user_worker.insert(1, event.extra['from'], spaced_words[1])
+          #      commands.insert(0, {
+          #          'access_level': 1,
+           #         'vk_id': event.extra['from'],
+           #         'value': spaced_words[1]})
+           # else:
+          #      send_message(vk_session, 'chat_id', event.chat_id, "Ассоциация занята")
 
         """ Добавление и удаление комманд """
         # TODO добавить уровни и контроль юзеров

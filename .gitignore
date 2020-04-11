@@ -4,3 +4,5 @@
 VKBot/settings.py
 VKBot/.idea/VKBot.iml
 *.xml
+*.pyc
+*.log
