@@ -74,15 +74,16 @@ for event in long_poll.listen():
 
         if event.text == "!камни":
             send_message(vk_session, 'chat_id', event.chat_id,
-                         '🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿')
+                         '🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿' +
+                         '🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿')
         if event.text == "!vkbot":
             send_message(vk_session, 'chat_id', event.chat_id,
-                         'Комманды бота Ильи: \n >>>>>>>>>>>>>>>>>>>> \n <<КОМАНДЫ>> \n  '
-                         '\n •!шанс ---->узнать шанс чего-либо \n •!шар --->вопрос, после чего будет '
-                         'выдан ответ \n  \n <<РАНДОМ АНИМЕ АРТЫ>> \n  \n •!лоли \n •!юри \n •!ахегао '
-                         '\n •!фейт прикол \n •!фейт арт \n •!камшот \n \n <<3Д ТЯНКИ И НЕ ТОЛЬКО>> \n  \n'
-                         ' •!3д мусор \n •!кукла \n \n <<ТОСАКА РИН>> \n \n •!тосака \n •!тосака2 ---> хентай'
-                         ' \n •!иштар \n •!эриш  \n \n <<ПРОЧЕЕ ГОВНО>> \n \n •!камни \n '
+                         'Комманды бота Ильи: \n >>>>>>>>>>>>>>>>>>>> \n <<КОМАНДЫ>> \n  ' +
+                         '\n •!шанс ---->узнать шанс чего-либо \n •!шар --->вопрос, после чего будет ' +
+                         'выдан ответ \n  \n <<РАНДОМ АНИМЕ АРТЫ>> \n  \n •!лоли \n •!юри \n •!ахегао ' +
+                         '\n •!фейт прикол \n •!фейт арт \n •!камшот \n \n <<3Д ТЯНКИ И НЕ ТОЛЬКО>> \n  \n' +
+                         ' •!3д мусор \n •!кукла \n \n <<ТОСАКА РИН>> \n \n •!тосака \n •!тосака2 ---> хентай' +
+                         ' \n •!иштар \n •!эриш  \n \n <<ПРОЧЕЕ ГОВНО>> \n \n •!камни \n ' +
                          '•!палата шевцова \n •!хуесосина \n •!колда \n •!музыка \n •!радмир \n •!клоун',
                          attachment='photo564230346_457239307')
         if event.text == "!лоли":
@@ -143,11 +144,22 @@ for event in long_poll.listen():
             if event.from_chat:
                 val = random.choice((vk_session.method('messages.getChat', {'chat_id': event.chat_id}))['users'])
                 send_message(vk_session, 'peer_id', event.peer_id, "@id" + str(val))
-        if event.text.lower() == "!gvn":
+        if event.text == "!gvn":
             huy = vk_session.method('video.get', {'owner_id': '-164489758', 'count': 200, 'offset': 1})['items']
             qwert = random.choice(list(i for i in huy))
-            send_message(vk_session, 'peer_id', event.peer_id, 'Держи gvn!',attachment='video' + str(-164489758) + '_' + str(qwert['id']))
-
+            send_message(vk_session, 'peer_id', event.peer_id, 'Держи gvn!', attachment='video' + str(-164489758) + '_'
+                                                                                        + str(qwert['id']))
+        if event.text == '!статус':
+            #TODO WTF rewrite it
+            found = False
+            for user in users:
+                if user['vk_id'] == int(event.extra_values['from']):
+                    send_message(vk_session, 'chat_id', event.chat_id, "Вы зарегестрированы как " +
+                    user['association'] + " и ваш текущий уровень: " + str(user['access_level']))
+                    found = True
+            if not found:
+                send_message(vk_session, 'chat_id', event.chat_id, "Вы не зарегестрированы ;d" +
+                                                                   " чтобы разегаться юзай !regme <ник>")
         spaced_words = str(response).split(' ')
 
         if spaced_words[0] == '!шанс' and len(spaced_words) > 1:
@@ -172,12 +184,16 @@ for event in long_poll.listen():
                         'access_level': 1,
                         'vk_id': event.extra_values['from'],
                         'value': spaced_words[1]})
+                    send_message(vk_session, 'chat_id', event.chat_id, "вы зарегестировались! Ваш ник: "
+                                 + spaced_words[1] + " и уровень 1 :)")
                 else:
                     user_worker.insert(10, event.extra_values['from'], spaced_words[1])
                     commands.insert(0, {
                         'access_level': 10,
                         'vk_id': event.extra_values['from'],
                         'value': spaced_words[1]})
+                send_message(vk_session, 'chat_id', event.chat_id, "вы зарегестировались админом! Ваш ник: "
+                             + spaced_words[1] + " и уровень 10 (max) :)")
             else:
                 send_message(vk_session, 'chat_id', event.chat_id, "Ассоциация занята")
 
