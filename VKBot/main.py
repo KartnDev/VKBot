@@ -29,12 +29,19 @@ session_api = vk_session.get_api()
 long_poll = VkLongPoll(vk_session)
 
 
-
-
 def send_message(vk_session, id_type, id, message=None, attachment=None, keyboard=None):
     vk_session.method('messages.send',
                       {id_type: id, 'message': message, 'random_id': random.randint(-2147483648, +2147483648),
                        "attachment": attachment, 'keyboard': keyboard})
+
+
+"""Возвтращает True если у человека доступ такой же или выше, в иных случаях False"""
+def is_permitted(vk_id: int, required_level: int):
+    for user in users:
+        if user['vk_id'] == vk_id:
+            return users['access_level'] >= required_level
+        else:
+            return False
 
 
 def get_pictures(vk_session, id_group, vk):
@@ -160,35 +167,49 @@ for event in long_poll.listen():
         """ Добавление и редактирование в список пользователей """
         if spaced_words[0] == '!regme' and len(spaced_words) == 2:
             if spaced_words[1] not in list(i['association'] for i in users):
-                user_worker.insert(1, event.extra_values['from'], spaced_words[1])
-                commands.insert(0, {
-                   'access_level': 1,
-                   'vk_id': event.extra_values['from'],
-                   'value': spaced_words[1]})
+                if admin_id_int != int(event.extra_values['from']):
+                    user_worker.insert(1, event.extra_values['from'], spaced_words[1])
+                    commands.insert(0, {
+                        'access_level': 1,
+                        'vk_id': event.extra_values['from'],
+                        'value': spaced_words[1]})
+                else:
+                    user_worker.insert(10, event.extra_values['from'], spaced_words[1])
+                    commands.insert(0, {
+                        'access_level': 10,
+                        'vk_id': event.extra_values['from'],
+                        'value': spaced_words[1]})
             else:
                 send_message(vk_session, 'chat_id', event.chat_id, "Ассоциация занята")
 
         """ Добавление и удаление комманд """
         # TODO добавить уровни и контроль юзеров
         if spaced_words[0] == '!addcom' and len(spaced_words) >= 3:
-            if spaced_words[1] == spaced_words[2]:
-                send_message(vk_session, 'chat_id', event.chat_id, "Нельзя добавить эхо-комманду")
-            elif spaced_words[1] in list(i['name'] for i in commands):
-                send_message(vk_session, 'chat_id', event.chat_id, "Нельзя добавить существуюую комманду")
-            else:
-                command_worker.insert(10, spaced_words[1], ' '.join(spaced_words[2:]))
-                commands.insert(0, {
-                    'access_level': 10,
-                    'name': spaced_words[1],
-                    'value': ' '.join(spaced_words[2:])})
+            if is_permitted(event.extra_values['from'], 5):
+                if spaced_words[1] == spaced_words[2]:
+                    send_message(vk_session, 'chat_id', event.chat_id, "Нельзя добавить эхо-комманду")
+                elif spaced_words[1] in list(i['name'] for i in commands):
+                    send_message(vk_session, 'chat_id',
+                                 event.chat_id, "Нельзя добавить существуюую комманду")
+                else:
+                    command_worker.insert(10, spaced_words[1], ' '.join(spaced_words[2:]))
+                    commands.insert(0, {
+                         'access_level': 10,
+                         'name': spaced_words[1],
+                         'value': ' '.join(spaced_words[2:])})
 
-                send_message(vk_session, 'chat_id', event.chat_id, "Комманда " + spaced_words[1] + " добавлена!")
+                    send_message(vk_session, 'chat_id', event.chat_id, "Комманда " + spaced_words[1] + " добавлена!")
+            else:
+                send_message(vk_session, 'chat_id', event.chat_id, "Permission denied, required level to access: 5")
 
         if spaced_words[0] == '!delcom' and len(spaced_words) == 2:
-            for item in commands:
-                if item['name'] == spaced_words[1]:
-                    command_worker.delete(spaced_words[1])
-                    index = list(i['name'] for i in commands).index(spaced_words[1])
-                    commands.pop(index)
-                    send_message(vk_session, 'chat_id', event.chat_id, "Комманда " + spaced_words[1] + " удалена!")
-                    break
+            if is_permitted(event.extra_values['from'], 5):
+                for item in commands:
+                    if item['name'] == spaced_words[1]:
+                        command_worker.delete(spaced_words[1])
+                        index = list(i['name'] for i in commands).index(spaced_words[1])
+                        commands.pop(index)
+                        send_message(vk_session, 'chat_id', event.chat_id, "Комманда " + spaced_words[1] + " удалена!")
+                        break
+            else:
+                send_message(vk_session, 'chat_id', event.chat_id, "Permission denied, required level to access: 5")
