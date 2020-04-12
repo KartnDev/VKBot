@@ -38,10 +38,9 @@ def send_message(vk_session, id_type, id, message=None, attachment=None, keyboar
 """Возвтращает True если у человека доступ такой же или выше, в иных случаях False"""
 def is_permitted(vk_id: int, required_level: int):
     for user in users:
-        if user['vk_id'] == vk_id:
-            return users['access_level'] >= required_level
-        else:
-            return False
+        if user['vk_id'] == int(vk_id):
+            return user['access_level'] >= required_level
+    return False
 
 
 def get_pictures(vk_session, id_group, vk):
@@ -185,7 +184,7 @@ for event in long_poll.listen():
         """ Добавление и удаление комманд """
         # TODO добавить уровни и контроль юзеров
         if spaced_words[0] == '!addcom' and len(spaced_words) >= 3:
-            if is_permitted(event.extra_values['from'], 5):
+            if is_permitted(int(event.extra_values['from']), 5):
                 if spaced_words[1] == spaced_words[2]:
                     send_message(vk_session, 'chat_id', event.chat_id, "Нельзя добавить эхо-комманду")
                 elif spaced_words[1] in list(i['name'] for i in commands):

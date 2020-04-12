@@ -23,8 +23,8 @@ class UserWorker:
 
         return items
 
-    def insert(self, access_lvl: int, vk_id: int, association: str):
-        row = UserModel.UserModel(access_lvl=access_lvl, vk_id=vk_id, association=association)
+    def insert(self, access_level: int, vk_id: int, association: str):
+        row = UserModel.UserModel(access_level=access_level, vk_id=vk_id, association=association)
         self.db.insert(row)
 
     def delete(self, vk_id: int):
