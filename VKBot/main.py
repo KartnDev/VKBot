@@ -15,12 +15,12 @@ config_loader = StartupLoader('config.JSON')
 admin_id_int = config_loader.get_admin_id()
 
 # Создание БД воркеров
-#user_worker = UserWorker()
+user_worker = UserWorker()
 command_worker = CommandWorker()
 
 # Загрузка листов из БД
 commands = command_worker.select_all()
-#users = user_worker.select_all()
+users = user_worker.select_all()
 
 
 # Инициализация vk_api
@@ -158,15 +158,15 @@ for event in long_poll.listen():
                                             "нет,ты чё шизоид?"])) + ' ')
 
         """ Добавление и редактирование в список пользователей """
-        #if spaced_words[0] == '!regme' and len(spaced_words) == 2:
-          #  if spaced_words[1] not in list(i['association'] for i in users):
-         #       user_worker.insert(1, event.extra['from'], spaced_words[1])
-          #      commands.insert(0, {
-          #          'access_level': 1,
-           #         'vk_id': event.extra['from'],
-           #         'value': spaced_words[1]})
-           # else:
-          #      send_message(vk_session, 'chat_id', event.chat_id, "Ассоциация занята")
+        if spaced_words[0] == '!regme' and len(spaced_words) == 2:
+            if spaced_words[1] not in list(i['association'] for i in users):
+                user_worker.insert(1, event.extra_values['from'], spaced_words[1])
+                commands.insert(0, {
+                   'access_level': 1,
+                   'vk_id': event.extra_values['from'],
+                   'value': spaced_words[1]})
+            else:
+                send_message(vk_session, 'chat_id', event.chat_id, "Ассоциация занята")
 
         """ Добавление и удаление комманд """
         # TODO добавить уровни и контроль юзеров
