@@ -195,6 +195,9 @@ for event in long_poll.listen():
                         'value': spaced_words[1]})
                 send_message(vk_session, 'chat_id', event.chat_id, "вы зарегестировались админом! Ваш ник: "
                              + spaced_words[1] + " и уровень 10 (max) :)")
+            elif int(event.extra_values['from']) in list(i['vk_id'] for i in users):
+                send_message(vk_session, 'chat_id', event.chat_id, "Вы зарегестрированы :c")
+                #TODO добавить сообщение для комманды изменения ассоциации
             else:
                 send_message(vk_session, 'chat_id', event.chat_id, "Ассоциация занята")
 
