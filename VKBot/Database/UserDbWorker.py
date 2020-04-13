@@ -30,3 +30,4 @@ class UserWorker:
     def delete(self, vk_id: int):
         user = UserModel.UserModel.get(UserModel.UserModel.vk_id == vk_id)
         self.db.delete(user)
+
