@@ -177,7 +177,8 @@ for event in long_poll.listen():
 
         """ Добавление и редактирование в список пользователей """
         if spaced_words[0] == '!regme' and len(spaced_words) == 2:
-            if spaced_words[1] not in list(i['association'] for i in users):
+            if (spaced_words[1] not in list(i['association'] for i in users)) or \
+                    (int(event.extra_values['from']) not in list(i['association'] for i in users)):
                 if admin_id_int != int(event.extra_values['from']):
                     user_worker.insert(1, event.extra_values['from'], spaced_words[1])
                     commands.insert(0, {
