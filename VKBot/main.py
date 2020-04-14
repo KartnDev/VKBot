@@ -181,7 +181,7 @@ for event in long_poll.listen():
                     (int(event.extra_values['from']) not in list(i['vk_id'] for i in users)):
                 if admin_id_int != int(event.extra_values['from']):
                     user_worker.insert(1, event.extra_values['from'], spaced_words[1])
-                    commands.insert(0, {
+                    users.insert(0, {
                         'access_level': 1,
                         'vk_id': event.extra_values['from'],
                         'value': spaced_words[1]})
@@ -189,7 +189,7 @@ for event in long_poll.listen():
                                  + spaced_words[1] + " и уровень 1 :)")
                 else:
                     user_worker.insert(10, event.extra_values['from'], spaced_words[1])
-                    commands.insert(0, {
+                    users.insert(0, {
                         'access_level': 10,
                         'vk_id': event.extra_values['from'],
                         'value': spaced_words[1]})
