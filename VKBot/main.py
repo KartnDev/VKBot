@@ -153,7 +153,7 @@ for event in long_poll.listen():
             #TODO WTF rewrite it
             found = False
             for user in users:
-                if user['vk_id'] == event.extra_values['from']:
+                if str(user['vk_id']) == event.extra_values['from']:
                     send_message(vk_session, 'chat_id', event.chat_id, "Вы зарегестрированы как " +
                     user['association'] + " и ваш текущий уровень: " + str(user['access_level']))
                     found = True
@@ -184,7 +184,7 @@ for event in long_poll.listen():
                     users.insert(0, {
                         'access_level': 1,
                         'vk_id': event.extra_values['from'],
-                        'value': spaced_words[1]})
+                        'association': spaced_words[1]})
                     send_message(vk_session, 'chat_id', event.chat_id, "вы зарегестировались! Ваш ник: "
                                  + spaced_words[1] + " и уровень 1 :)")
                 else:
@@ -192,7 +192,7 @@ for event in long_poll.listen():
                     users.insert(0, {
                         'access_level': 10,
                         'vk_id': event.extra_values['from'],
-                        'value': spaced_words[1]})
+                        'association': spaced_words[1]})
                 send_message(vk_session, 'chat_id', event.chat_id, "вы зарегестировались админом! Ваш ник: "
                              + spaced_words[1] + " и уровень 10 (max) :)")
             elif int(event.extra_values['from']) in list(i['vk_id'] for i in users):
