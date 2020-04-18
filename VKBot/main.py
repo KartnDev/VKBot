@@ -201,6 +201,16 @@ for event in long_poll.listen():
             else:
                 send_message(vk_session, 'chat_id', event.chat_id, "Ассоциация занята")
 
+        if response == "!delme":
+            if int(event.extra_values['from']) in list(i['vk_id'] for i in users):
+                index = list(i['vk_id'] for i in users).index(int(event.extra_values['from']))
+                user_worker.delete(int(event.extra_values['from']))
+                users.pop(index)
+            else:
+                print("cannot do it")
+
+
+
         """ Добавление и удаление комманд """
         # TODO добавить уровни и контроль юзеров
         if spaced_words[0] == '!addcom' and len(spaced_words) >= 3:
