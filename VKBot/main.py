@@ -208,6 +208,21 @@ for event in long_poll.listen():
                 users.pop(index)
             else:
                 print("cannot do it")
+        if spaced_words[0] == '!rename' and len(spaced_words) == 3:
+            if is_permitted(event.extra_values['from'], 1):
+                for pgr in users:
+                    if pgr['association'] == spaced_words[1]:
+                        index = list(i['association'] for i in users).index(spaced_words[1])
+                        commands.pop(index)
+                        users[index] = {
+                            'access_level': 2,
+                            'vk_id': pgr['vk_id'],
+                            'association': spaced_words[2]}
+                        user_worker.update(pgr['vk_id'], spaced_words[2], 2)
+                        send_message(vk_session, 'chat_id', event.chat_id,
+                                     "Поздравляю вы теперь: " + spaced_words[2] + ".\n И ваш уровень: 2")
+            else:
+                send_message(vk_session, 'chat_id', event.chat_id, "Ты кто такой сука?")
 
 
 
