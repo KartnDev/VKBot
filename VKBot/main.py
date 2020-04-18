@@ -153,7 +153,7 @@ for event in long_poll.listen():
             #TODO WTF rewrite it
             found = False
             for user in users:
-                if user['vk_id'] == int(event.extra_values['from']):
+                if user['vk_id'] == event.extra_values['from']:
                     send_message(vk_session, 'chat_id', event.chat_id, "Вы зарегестрированы как " +
                     user['association'] + " и ваш текущий уровень: " + str(user['access_level']))
                     found = True
