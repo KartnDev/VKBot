@@ -29,10 +29,16 @@ class DbSession:
 
     """Метод запроса к таблице определенных данных и возвращает запрошенный объект (таблицу) 
     причем с разным размером 
-    sql_select - str запроса"""
+    sql_select - str запроса
+    :returns None if get wrong arg 
+    :returns Data from execution """
 
     def select(self, sql_select: str):
-        raise NotImplementedError
+        try:
+            return self.model.execute(sql_select)
+        except Exception as ex:
+            logging.info(ex)
+            return None
 
     """Метод загружает всю таблицу из бд"""
 
@@ -47,7 +53,7 @@ class DbSession:
         :argument data : object то что заносится в базу данных (должно совпадать с типом стоблца)
         :argument column_name : object название столбца куда добавляешь"""
 
-    def alter(self, data, column_name: str):
+    def update(self, data, row_model):
         raise NotImplementedError
 
     """Метод записи в таблицу нового значения (строки)
