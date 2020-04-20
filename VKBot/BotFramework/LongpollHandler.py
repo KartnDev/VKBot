@@ -5,7 +5,7 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 class LongPollHandler:
 
     def __init__(self, token: str):
-        self._vk_session = vk_api.VkApi(token=token.get_vk_token())
+        self._vk_session = vk_api.VkApi(token=token)
         self._session_api = self._vk_session.get_api()
         self._long_poll = VkLongPoll(self._vk_session)
 
