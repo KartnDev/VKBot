@@ -15,7 +15,7 @@ class ChatMsgController:
     @RequiredLvl(lvl=10)
     @HandleMessage(msg="!Hello")
     def handle_name(self, event_sender: ChatEventSender):
-        self.vk.send_message('Hello from bot')
+        self.vk.send_message_chat(event_sender.chat_id, "ИДИ НАХУЙ!")
         print(event_sender.chat_id)
         print(event_sender.user_id)
         print(event_sender.event['message'])

@@ -26,7 +26,8 @@ class LongPollHandler:
                 if event.from_chat:
                     # trying find handler for message
                     for handler in self.chat_handlers:
-                        if str(handler[1]).split('=')[1].replace('"', '').replace(' ', '') == event.text:
+                        msg_handle = handler[1].split('=')[1].replace('\"', '').replace(' ', '').replace('\'', '')
+                        if msg_handle == event.text:
                             chat_event = ChatEventSender(event.chat_id,
                                                          int(event.extra_values['from']),
                                                          {"message": event.text,
