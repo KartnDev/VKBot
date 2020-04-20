@@ -9,10 +9,13 @@ class LongPollHandler:
         self._session_api = self._vk_session.get_api()
         self._long_poll = VkLongPoll(self._vk_session)
 
-    async def start_handle(self):
+    def start_handle(self):
         for event in self._long_poll.listen():
             if event.type == VkEventType.MESSAGE_NEW:
                 if event.from_chat:
                     pass    # UserController Startup
                 if event.from_user:
                     pass    # ChatController Startup
+
+
+
