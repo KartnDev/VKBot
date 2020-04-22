@@ -24,7 +24,6 @@ class ChatMsgController:
         print("Текст сообщенияЖ :"+ event_sender.event['message'])
         print(event_sender.event['attachment'])
 
-
     @HandleMessage(msg="!Bye")
     def retw_TO(self, event_sender: ChatEventSender):
         self.vk.send_message('Hello from bot')
