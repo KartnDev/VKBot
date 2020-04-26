@@ -5,6 +5,7 @@ VKBot/settings.py
 VKBot/.idea/VKBot.iml
 *.xml
 *.pyc
+.venvNew
 *.log
 *.pyc
 VKBot/Database/Models/__pycache__/CommandModel.cpython-37.pyc
