@@ -19,8 +19,8 @@ class UserWorker:
             items.append({
                 'access_level': item.access_level,
                 'vk_id': item.vk_id,
-                'association': item.association})
-
+                'association': item.association,
+                'lvl_exp': item.lvl_exp})
         return items
 
     def insert(self, access_level: int, vk_id: int, association: str):

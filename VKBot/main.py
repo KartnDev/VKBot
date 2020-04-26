@@ -7,8 +7,8 @@ from Database.UserDbWorker import UserWorker
 from StartupLoader.StartupLoader import StartupLoader
 import vk_api
 import random
-
-
+import math
+import sched, time
 # Предзагрузка конфигураций
 config_loader = StartupLoader('config.JSON')
 
@@ -27,6 +27,33 @@ users = user_worker.select_all()
 vk_session = vk_api.VkApi(token=config_loader.get_vk_token())
 session_api = vk_session.get_api()
 long_poll = VkLongPoll(vk_session)
+
+# код для работы экспы
+user_spam_coeffs = dict([user['vk_id'] for user in users], [1] * len(users))
+
+dict_of_levels = {
+    1: 1000,
+    2: 2700,
+    3: 7380,
+    4: 20000,
+    5: 54590,
+    6: 148400,
+    7: 1000000
+}
+
+schedule = sched.scheduler(time.time, time.sleep)
+
+
+def minute_schedule_update_spam_coefs(sc):
+    send_message(vk_session, 'user_id', 376359640, "Restart coefs")
+    schedule.enter(60, 60, minute_schedule_update_spam_coefs, (sc,))
+
+    # db.update(EXP ALL USERS)
+
+schedule.enter(60, 60, minute_schedule_update_spam_coefs, (schedule,))
+schedule.run()
+
+
 
 
 def send_message(vk_session, id_type, id, message=None, attachment=None, keyboard=None):
@@ -61,11 +88,35 @@ def get_pictures(vk_session, id_group, vk):
         return get_pictures(vk_session,  id_group, vk)
 
 
+def distribution_func(value: int):
+    if value < 50:
+        return 5 * math.sin(2 * math.pi * value - math.pi/2) + 6.2
+    else:
+        return 6 / value
+
 for event in long_poll.listen():
     if event.type == VkEventType.MESSAGE_NEW:
-        # TODO не еш подумой
-        # logging.info("message from user id" + str(event.extra_values['from']) + " with MSG: " + event.text)
         response = event.text
+        current_user = {'access_level': 0,
+                        'vk_id': None,
+                        'association': "Unknown",
+                        'lvl_exp': 0}
+        if event.from_chat:
+            for user in users:
+                if user['vk_id'] == int(event.extra_values['from']):
+                    current_user = user
+                    if user['access_level'] < 8:
+                        coef = 2
+                        user['lvl_exp'] += distribution_func(len(event.text.split(' '))) / coef * user_spam_coeffs[user['vk_id']]
+                        if user_spam_coeffs[user['vk_id']] > 0.7:
+                            user_spam_coeffs[user['vk_id']] -= 0.03
+                        else:
+                            user_spam_coeffs[user['vk_id']] *= 0.57
+                        if user['lvl_exp'] >= dict_of_levels[user['access_level']]:
+                            user['lvl_exp'] = 0
+                            # level up
+                            user['access_level'] += 1
+                            # TODO bd.update(user['vk_id], user['access_level'])
 
         for item in commands:
             if item['name'] == event.text:
@@ -215,10 +266,10 @@ for event in long_poll.listen():
                         index = list(i['association'] for i in users).index(spaced_words[1])
                         commands.pop(index)
                         users[index] = {
-                            'access_level': 2,
+                            'access_level': 1,
                             'vk_id': pgr['vk_id'],
                             'association': spaced_words[2]}
-                        user_worker.update(pgr['vk_id'], spaced_words[2], 2)
+                        user_worker.update(pgr['vk_id'], spaced_words[2], 1)
                         send_message(vk_session, 'chat_id', event.chat_id,
                                      "Поздравляю вы теперь: " + spaced_words[2] + ".\n И ваш уровень: 2")
             else:
