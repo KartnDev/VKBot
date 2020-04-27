@@ -25,3 +25,4 @@ class CommandWorker:
     def delete(self, comm_name: str):
         command = CommandModel.CommandModel.get(CommandModel.CommandModel.name == comm_name)
         self.db.delete(command)
+

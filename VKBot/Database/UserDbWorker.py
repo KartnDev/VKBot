@@ -14,7 +14,6 @@ class UserWorker:
     def select_all(self):
         data = self.db.select_all_table()
         items = []
-        print(data)
         for item in data:
             items.append({
                 'access_level': item.access_level,
@@ -40,3 +39,4 @@ class UserWorker:
         elif (association is not None) and (level is None):
             pass
         #TODO do it
+

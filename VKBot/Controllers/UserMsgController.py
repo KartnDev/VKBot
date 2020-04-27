@@ -1,3 +1,7 @@
+from BotFramework.EventSender import ChatEventSender
+from BotFramework.SDK import HandleMessage
+
+
 class ChatMsgController:
 
     def __getattr__(self, item):

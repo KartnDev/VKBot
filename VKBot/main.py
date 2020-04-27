@@ -1,3 +1,5 @@
+from threading import Thread
+
 from vk_api.longpoll import VkLongPoll, VkEventType
 
 from Database import Connector
@@ -29,7 +31,7 @@ session_api = vk_session.get_api()
 long_poll = VkLongPoll(vk_session)
 
 # код для работы экспы
-user_spam_coeffs = dict([user['vk_id'] for user in users], [1] * len(users))
+user_spam_coeffs = dict(zip([user['vk_id'] for user in users], [1] * len(users)))
 
 dict_of_levels = {
     1: 1000,
@@ -44,22 +46,23 @@ dict_of_levels = {
 schedule = sched.scheduler(time.time, time.sleep)
 
 
+def send_message(vk_session, id_type, id, message=None, attachment=None, keyboard=None):
+    vk_session.method('messages.send',
+                      {id_type: id, 'message': message, 'random_id': random.randint(-2147483648, +2147483648),
+                       "attachment": attachment, 'keyboard': keyboard})
+
+
 def minute_schedule_update_spam_coefs(sc):
     send_message(vk_session, 'user_id', 376359640, "Restart coefs")
     schedule.enter(60, 60, minute_schedule_update_spam_coefs, (sc,))
 
     # db.update(EXP ALL USERS)
-
-schedule.enter(60, 60, minute_schedule_update_spam_coefs, (schedule,))
-schedule.run()
-
-
+async def StartReload():
+    schedule.enter(60, 60, minute_schedule_update_spam_coefs, (schedule,))
+    await schedule.run()
 
 
-def send_message(vk_session, id_type, id, message=None, attachment=None, keyboard=None):
-    vk_session.method('messages.send',
-                      {id_type: id, 'message': message, 'random_id': random.randint(-2147483648, +2147483648),
-                       "attachment": attachment, 'keyboard': keyboard})
+
 
 
 """Возвтращает True если у человека доступ такой же или выше, в иных случаях False"""
@@ -94,6 +97,9 @@ def distribution_func(value: int):
     else:
         return 6 / value
 
+StartReload()
+
+
 for event in long_poll.listen():
     if event.type == VkEventType.MESSAGE_NEW:
         response = event.text
@@ -116,6 +122,8 @@ for event in long_poll.listen():
                             user['lvl_exp'] = 0
                             # level up
                             user['access_level'] += 1
+                            send_message(vk_session, 'chat_id', event.chat_id, "@id" + event.extra_values['from']
+                                         + "Апнул " + user['access_level'] + 'левел!')
                             # TODO bd.update(user['vk_id], user['access_level'])
 
         for item in commands:
@@ -206,7 +214,8 @@ for event in long_poll.listen():
             for user in users:
                 if str(user['vk_id']) == event.extra_values['from']:
                     send_message(vk_session, 'chat_id', event.chat_id, "Вы зарегестрированы как " +
-                    user['association'] + " и ваш текущий уровень: " + str(user['access_level']))
+                                    user['association'] + " и ваш текущий уровень: " +
+                                    str(user['access_level']) + 'lvl и ' + str(user['lvl_exp']) + 'опыта')
                     found = True
             if not found:
                 send_message(vk_session, 'chat_id', event.chat_id, "Вы не зарегестрированы ;d" +
