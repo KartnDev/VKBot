@@ -84,14 +84,16 @@ def distribution_func(value: int):
         return 6 / value
 
 
-async def longpoolHandle():
+def longpoolHandle():
     user_spam_coeffs = dict(zip([user['vk_id'] for user in users], [1] * len(users)))
     counter_of_messages = 0
+
     for event in long_poll.listen():
         if event.type == VkEventType.MESSAGE_NEW:
             counter_of_messages += 1
             #TODO REWRITE IT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! (without message or more logics from)
             if counter_of_messages >= 150:
+                # TODO update_all_users_exp in database
                 user_spam_coeffs = dict(zip([user['vk_id'] for user in users], [1] * len(users)))
                 counter_of_messages = 0
             response = event.text
@@ -104,14 +106,13 @@ async def longpoolHandle():
                     if user['vk_id'] == int(event.extra_values['from']):
                         current_user = user
                         if user['access_level'] < 8:
-                            coef = 2
+                            coef = 0.33 # coef of accseleration the level
                             user['lvl_exp'] += distribution_func(len(event.text.split(' '))) / coef * \
                                                user_spam_coeffs[user['vk_id']]
                             if user_spam_coeffs[user['vk_id']] > 0.7:
                                 user_spam_coeffs[user['vk_id']] -= 0.03
                             else:
                                 user_spam_coeffs[user['vk_id']] *= 0.57
-                            print(user_spam_coeffs[user['vk_id']])
                             if user['lvl_exp'] >= dict_of_levels[user['access_level']]:
                                 user['lvl_exp'] = 0
                                 # level up
@@ -210,8 +211,9 @@ async def longpoolHandle():
                 for user in users:
                     if str(user['vk_id']) == event.extra_values['from']:
                         send_message(vk_session, 'chat_id', event.chat_id, "Вы зарегестрированы как " +
-                                     user['association'] + " и ваш текущий уровень: " +
-                                     str(user['access_level']) + 'lvl и ' + str(round(user['lvl_exp'], 2)) + 'опыта')
+                                     user['association'] + "\n  Ваш текущий уровень: " +
+                                     str(user['access_level']) + 'lvl и ' + str(round(user['lvl_exp'], 2)) + ' / ' +
+                                     str(dict_of_levels[user['access_level']]) + 'XP')
                         found = True
                 if not found:
                     send_message(vk_session, 'chat_id', event.chat_id, "Вы не зарегестрированы ;d" +
@@ -249,7 +251,7 @@ async def longpoolHandle():
                             'access_level': 10,
                             'vk_id': event.extra_values['from'],
                             'association': spaced_words[1]})
-                    send_message(vk_session, 'chat_id', event.chat_id, "вы зарегестировались админом! Ваш ник: "
+                        send_message(vk_session, 'chat_id', event.chat_id, "вы зарегестировались админом! Ваш ник: "
                                  + spaced_words[1] + " и уровень 10 (max) :)")
                 elif int(event.extra_values['from']) in list(i['vk_id'] for i in users):
                     send_message(vk_session, 'chat_id', event.chat_id, "Вы зарегестрированы :c")
@@ -269,7 +271,7 @@ async def longpoolHandle():
                     for pgr in users:
                         if pgr['association'] == spaced_words[1]:
                             index = list(i['association'] for i in users).index(spaced_words[1])
-                            commands.pop(index)
+                            users.pop(index)
                             users[index] = {
                                 'access_level': 1,
                                 'vk_id': pgr['vk_id'],
@@ -314,9 +316,4 @@ async def longpoolHandle():
                 else:
                     send_message(vk_session, 'chat_id', event.chat_id, "Permission denied, required level to access: 5")
 
-
-async def main():
-    await longpoolHandle()
-
-
-asyncio.run(main())
+longpoolHandle()
