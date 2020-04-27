@@ -1,3 +1,4 @@
+from BotFramework import VkAction
 from BotFramework.EventSender import ChatEventSender
 from BotFramework.SDK import HandleMessage
 
