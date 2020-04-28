@@ -1,5 +1,5 @@
 import logging
-from Database.Models import BaseModel, CommandModel
+from Database.Models import BaseModel, OsuModel, CommandModel
 from Database.Models.BaseModel import dbhandle, InternalError
 
 
@@ -33,11 +33,11 @@ class DbSession:
     :returns None if get wrong arg 
     :returns Data from execution """
 
-    def select(self, sql_select: str):
+    def select(self, sql_select: int):
         try:
             return self.model.execute(sql_select)
         except Exception as ex:
-            logging.info(ex)
+            print(ex)
             return None
 
     """Метод загружает всю таблицу из бд"""
