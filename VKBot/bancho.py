@@ -17,7 +17,7 @@ def get_osu_token():
     return config_loader.get_osu_token()
 
 
-class osu_api:
+class OsuApi:
     key = None
     mode = None  # TODO in DB
     api_url = 'https://osu.ppy.sh/api/'
@@ -350,4 +350,4 @@ class osu_api:
         return info
 
 
-osu_session = osu_api(get_osu_token(), 0)
+osu_session = OsuApi(get_osu_token(), 0)

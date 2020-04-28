@@ -30,7 +30,6 @@ class OsuWorker:
             print(ex)
             return None
 
-
     def insert(self, osu_vk_id: str, osu_nickname: str):
         row = OsuModel.OsuModel(vk_id=osu_vk_id, nickname=osu_nickname, mode=0)
         self.db.insert(row)
@@ -38,6 +37,7 @@ class OsuWorker:
     def delete(self, osu_vk_id: str):
         command = OsuModel.OsuModel.get(OsuModel.OsuModel.vk_id == osu_vk_id)
         self.db.delete(command)
+
     def update(self, vk_id, nickname: str = None, mode: int = None):
         row = OsuModel.OsuModel.get(OsuModel.OsuModel.vk_id == vk_id)
         self.db.delete(row)
