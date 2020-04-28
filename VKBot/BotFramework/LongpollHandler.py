@@ -20,7 +20,10 @@ class LongPollHandler:
 
         self.chat_handlers = self._methods_with_decorator(ChatMsgController, "HandleMessage")
 
-    def start_handle(self):
+    async def callback_listener(self):
+        pass
+
+    async def start_handle(self):
         for event in self._long_poll.listen():
             if event.type == VkEventType.MESSAGE_NEW:
                 if event.from_chat:
