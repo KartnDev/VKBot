@@ -269,6 +269,19 @@ async def longpool_handle():
                                              + str(data['list'][1]['temp']['night']) + '°C' + '\n☁Облачность: '
                                              + str(data['list'][1]['clouds']) + '%\n📊Давление: '
                                              + str(data['list'][1]['pressure']))
+                        if spaced_words[1] == 'сегодня':
+                            res = requests.get("https://api.openweathermap.org/data/2.5/forecast/daily",
+                                               params={'q': spaced_words[2], 'units': 'metric', 'lang': 'ru',
+                                                       'APPID': '81d59d3e4bcd5bd5b69f6f95250213ee', 'cnt': 2})
+                            data = res.json()
+                            bot.send_message('peer_id', event.peer_id,
+                                             data['city']['name'] + ' | ' + data['city']['country'] + '\n🌍Погода: '
+                                             + str(data['list'][0]['weather'][0]['description'])
+                                             + '\n🌄Температура днем: '
+                                             + str(data['list'][0]['temp']['day']) + '°C' + '\n🌃Температура ночью: '
+                                             + str(data['list'][0]['temp']['night']) + '°C' + '\n☁Облачность: '
+                                             + str(data['list'][0]['clouds']) + '%\n📊Давление: '
+                                             + str(data['list'][0]['pressure']))
                 except: bot.send_message('peer_id', event.peer_id, 'Город не найден!')
             if event.text.lower() == "!com":
                 bot.send_message('peer_id', event.peer_id, str(names))
