@@ -7,8 +7,45 @@ import logging
 from datetime import datetime
 import requests
 import json
+import time
 
+class VkBan:
+    def __init__(self, vk_session, session_api):
+        self.vk = vk_session
+        self.session = session_api
 
+    def send_wo_mention(self, id_type, id, message=None, attachment=None, keyboard=None):
+        self.vk.method('messages.send',
+                       {id_type: id, 'message': message, 'random_id': random.randint(-2147483648, +2147483648),
+                        "attachment": attachment, 'keyboard': keyboard, 'disable_mentions': 1})
+
+    def send_message(self, id_type, id, message=None, attachment=None, keyboard=None):
+        self.vk.method('messages.send',
+                       {id_type: id, 'message': message, 'random_id': random.randint(-2147483648, +2147483648),
+                        "attachment": attachment, 'keyboard': keyboard})
+
+    #TODO переписать это легаси говно без try
+    async def ban(self, chat_id, user_id, time_delay='permanent', reason=None):
+            if time_delay == 'permanent':
+                self.send_message('chat_id', chat_id,
+                    'забанен по причине: ' + str(reason) if reason is not None else 'Причина: без причины')
+                self.send_message('chat_id', chat_id,'на время: навсегда')
+                self.vk.method('messages.removeChatUser', {'chat_id': chat_id, 'user_id': user_id})
+
+            elif 1 <= int(time_delay) <= 100000:
+                self.send_message('chat_id', chat_id,
+                    'забанен по причине: ' + str(reason) if reason is not None else ' без причины')
+                self.send_message('chat_id', chat_id,'на время: ' + str(time_delay) + ' секунд')
+                self.vk.method('messages.removeChatUser', {'chat_id': chat_id, 'user_id': user_id})
+                time.sleep(float(time_delay))
+                self.invite(chat_id, user_id)
+    def invite(self, chat_id, user_id):
+        """Только для беседы. Требует только id человека для добавления в беседу"""
+        try:
+            self.vk.method('messages.addChatUser', {'chat_id': chat_id, 'user_id': user_id})
+        except Exception:
+            self.send_message('chat_id', chat_id,
+                'Ошибка добавления... Возможно, пользователя не существует в беседе..')
 
 class VkBot:
     def __init__(self, vk_session, session_api):
@@ -16,50 +53,6 @@ class VkBot:
         self.session = session_api
 
     #TODO переписать это легаси говно без try
-    async def ban(self, chat_id, user_id, time_delay='permanent', reason=None):
-        """Возможны 3 случая передачи аргументов
-        1ый когда передается только id - тогда идет полный бан навсегда без причины ( или 2ым агрементом передать
-            permanent и 3ым причину)
-        2ой передается id и время - соответственно банит на время (но без причины)
-        3ий передается id человека, время (или permanent), и причина"""
-        try:
-            if time_delay == 'permanent':
-                self.send_message_chat(
-                    'забанен по причине: ' + str(reason) if reason is not None else 'Причина: без причины')
-                self.send_message_chat('на время: навсегда')
-                try:
-                    self.vk_session.method('messages.removeChatUser', {'chat_id': self.chat_id, 'user_id': user_id})
-                except Exception as ex:
-                    logging.info(ex.__doc__ + ex)
-
-            elif 1 <= int(time_delay) <= 100000:
-                self.send_message_chat(
-                    'забанен по причине: ' + str(reason) if reason is not None else ' без причины')
-                self.send_message_chat('на время: ' + str(time_delay) + ' секунд')
-                try:
-                    self.vk_session.method('messages.removeChatUser', {'chat_id': self.chat_id, 'user_id': user_id})
-                except Exception as ex:
-                    logging.info(ex.__doc__ + ex)
-                await asyncio.sleep(float(time_delay))
-                self.invite(chat_id, user_id)
-
-            else:
-                return 1
-        except Exception as ex:
-            logging.info('cant ban user' + ex.__doc__ + ex)
-            self.send_message('chat_id', chat_id,
-                'Ошибка блокировки... Невозможно забанить пользователя @id' +
-                user_id + ' Возможно, пользователя не существует в беседе или неправилен синтаксис..')
-
-    def invite(self, chat_id, user_id):
-        """Только для беседы. Требует только id человека для добавления в беседу"""
-        try:
-            self.vk_session.method('messages.addChatUser', {'chat_id': chat_id, 'user_id': user_id})
-        except Exception as ex:
-            logging.info('Cant invite the user ' + ex)
-            self.send_message('chat_id', chat_id,
-                              'Ошибка добавления... Возможно, пользователя не существует в беседе..')
-
     def send_wo_mention(self, id_type, id, message=None, attachment=None, keyboard=None):
         self.vk.method('messages.send',
                        {id_type: id, 'message': message, 'random_id': random.randint(-2147483648, +2147483648),

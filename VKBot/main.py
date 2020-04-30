@@ -10,6 +10,8 @@ import requests
 import json
 import sys
 import logging
+import threading
+from threading import Thread
 from Database.Models import BaseModel
 from Database.osuDbWorker import OsuWorker
 from Database.CommandDbWorker import CommandWorker
@@ -19,7 +21,7 @@ from subprocess import Popen, PIPE
 import subprocess
 import enum
 from bancho import osu_session, OsuApi
-from VkBot import VkBot
+from VkBot import VkBot, VkBan
 import math
 import sched, time
 
@@ -45,7 +47,7 @@ vk_session = vk_api.VkApi(token=config_loader.get_vk_token())
 session_api = vk_session.get_api()
 longpoll = VkLongPoll(vk_session)
 bot = VkBot(vk_session, session_api)
-
+ban = VkBan(vk_session, session_api)
 dict_of_levels = {
     1: 1000,
     2: 2700,
@@ -268,6 +270,19 @@ async def longpool_handle():
                                              + str(data['list'][1]['temp']['night']) + '°C' + '\n☁Облачность: '
                                              + str(data['list'][1]['clouds']) + '%\n📊Давление: '
                                              + str(data['list'][1]['pressure']))
+                        if spaced_words[1] == 'сегодня':
+                            res = requests.get("https://api.openweathermap.org/data/2.5/forecast/daily",
+                                               params={'q': spaced_words[2], 'units': 'metric', 'lang': 'ru',
+                                                       'APPID': '81d59d3e4bcd5bd5b69f6f95250213ee', 'cnt': 2})
+                            data = res.json()
+                            bot.send_message('peer_id', event.peer_id,
+                                             data['city']['name'] + ' | ' + data['city']['country'] + '\n🌍Погода: '
+                                             + str(data['list'][0]['weather'][0]['description'])
+                                             + '\n🌄Температура днем: '
+                                             + str(data['list'][0]['temp']['day']) + '°C' + '\n🌃Температура ночью: '
+                                             + str(data['list'][0]['temp']['night']) + '°C' + '\n☁Облачность: '
+                                             + str(data['list'][0]['clouds']) + '%\n📊Давление: '
+                                             + str(data['list'][0]['pressure']))
                 except: bot.send_message('peer_id', event.peer_id, 'Город не найден!')
             if event.text.lower() == "!com":
                 bot.send_message('peer_id', event.peer_id, str(names))
@@ -391,13 +406,17 @@ async def longpool_handle():
                 if is_permitted(int(event.extra_values['from']), 8):
                     if len(spaced_words) >= 2:
                         if len(spaced_words) == 2:
-                            await bot.ban(str(spaced_words[1]))
+                            await ban.ban(str(event.chat_id),str(spaced_words[1]))
                         if len(spaced_words) == 3:
-                            await bot.ban(spaced_words[1], spaced_words[2])
+                            await ban.ban(str(event.chat_id),spaced_words[1], spaced_words[2])
                         if len(spaced_words) > 3:
-                            bot.ban(spaced_words[1], spaced_words[2], ' '.join(str(x) for x in spaced_words[3:]))
+                            ban.ban(str(event.chat_id),spaced_words[1], spaced_words[2], ' '.join(str(x) for x in spaced_words[3:]))
                     else:
                         bot.send_message('chat_id', event.chat_id, 'Непрвелньый синтаксис!')
+
+            if response == '!suicide':
+                bot.send_message('chat_id', event.chat_id, 'Ну и псех..')
+                await ban.ban(str(event.chat_id), event.extra_values['from'], 60, 'ебаный самоубийца..')
 
             if spaced_words[0] == '!шанс' and len(spaced_words) > 1:
                 bot.send_message('peer_id', event.peer_id,
