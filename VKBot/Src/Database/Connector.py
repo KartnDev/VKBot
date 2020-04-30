@@ -1,7 +1,10 @@
+import asyncio
 from enum import IntEnum
 from collections.abc import Iterable
 import warnings
 import logging
+
+import aiomysql
 import mysql.connector
 
 
@@ -12,12 +15,13 @@ class DbConnVersion(IntEnum):
 
 
 class DbSession:
-    def __init__(self, host: str, database: str, username: str, password: str,
+    def __init__(self, host: str, database: str, username: str, password: str, port: int,
                  driver_ver: DbConnVersion = DbConnVersion.COUPLE):
         """
         Constructor that builds Sync and/or Async versions
 
         Args:
+            port: int port of mysql instance
             host: name of host address  example : localhost
             database: name of the database that be connected
             username: name of Database user (root)
@@ -34,15 +38,16 @@ class DbSession:
 
         """
         # sync version of driver
+        self._port = port
         self.driver_ver = driver_ver
         self._password = password
         self._username = username
         self._database = database
         self._host = host
         self._connection = mysql.connector.MySQLConnection()
-        self._connect()
+        self._connect_to_sync()
 
-    def _connect(self):
+    def _connect_to_sync(self):
         if self._connection.MySQLConnection.is_connected():
             try:
                 self._connection.connect(host=self._host, database=self._database,
@@ -63,10 +68,10 @@ class DbSession:
             Iterable: if select was success
             NoneType: if select was failed
         Raises:
-            Exception that
+            Exception that was taken by critical runtime error
         """
         if not self._connection.is_connected():
-            self._connect()
+            self._connect_to_sync()
 
         records = None
         cursor = None
@@ -140,3 +145,51 @@ class DbSession:
         """
         return self._base_select("SELECT {0} FROM {1} LIMIT {2}"
                                  .format(', '.join(name for name in column_names), table_name, str(top)))
+
+    async def _connect_to_async(self, loop):
+        _async_conn = None
+        try:
+            _async_conn = await aiomysql.create_pool(host=self._host, port=3306,
+                                                     user=self._username, password=self._password,
+                                                     db=self._database, loop=loop)
+            return _async_conn
+        except Exception as e:
+            logging.critical(e)
+            raise e
+
+    async def _base_select_async(self, select: str, loop) -> Iterable:
+        """
+            asynchronous version of protected method _base_select
+        Args:
+            loop (asyncio Async POOL): pool of asyncio io that can be got by call asyncio.get_pool
+            select: str type that will be executed in DataBase
+
+        Returns:
+            Iterable: if select was success
+            NoneType: if select was failed
+        Raises:
+            Exception that
+        """
+        _aw_pool_result = None
+        _as_pool = await self._connect_to_async(loop)
+        async with _as_pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(select)
+                _aw_pool_result = await cur.fetchall()
+        _as_pool.close()
+        await _as_pool.wait_closed()
+        return _aw_pool_result
+
+    async def select_all_table_async(self, table_name: str, loop) -> Iterable:
+        """
+        asynchronous version of protected method select_all_table
+        Gives selected table (all columns)
+
+        Args:
+            table_name: string of Table that required
+            loop (asyncio Async POOL): pool of asyncio io that can be got by call asyncio.get_pool
+        Returns:
+            Iterable: returns iterable top of objects with
+            NoneType: if select was failed
+        """
+        return await self._base_select_async("SELECT * FROM {0}".format(table_name), loop)
