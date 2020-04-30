@@ -1,12 +1,9 @@
 from vk_api.longpoll import VkLongPoll, VkEventType
 import vk_api
-from subprocess import Popen, PIPE
 import subprocess
 from datetime import datetime
-import time
-import random
-from StartupLoader.StartupLoader import StartupLoader
-from VkBot import VkBot
+from Src.StartupLoader.StartupLoader import StartupLoader
+from Src.VkBot import VkBot
 config_loader = StartupLoader('config.JSON')
 
 vk_session = vk_api.VkApi(token=config_loader.get_vk_token())

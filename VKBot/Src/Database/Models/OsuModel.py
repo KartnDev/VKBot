@@ -1,5 +1,5 @@
 from peewee import *
-from Database.Models.BaseModel import BaseModel
+from Src.Database.Models.BaseModel import BaseModel
 
 
 class OsuModel(BaseModel):

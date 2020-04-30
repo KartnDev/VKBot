@@ -1,6 +1,6 @@
-from BotFramework import VkAction
-from BotFramework.EventSender import ChatEventSender
-from BotFramework.SDK import HandleMessage
+from Src.BotFramework.EventSender import ChatEventSender
+from Src.BotFramework.SDK import HandleMessage
+from Src.BotFramework.VkAction import VkAction
 
 
 class ChatMsgController:
@@ -25,9 +25,7 @@ class ChatMsgController:
         print(event_sender.event['attachment'])
 
     @HandleMessage(msg="!Bye")
-    def ret(self, event_sender: ChatEventSender):
+    def retw_TO(self, event_sender: ChatEventSender):
         self.vk.send_message('Hello from bot')
 
-    @HandleMessage
-    def on_map_request(self, map_id: int):
-        pass
+

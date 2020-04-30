@@ -1,11 +1,8 @@
 import json
-import datetime
 import requests
-from subprocess import Popen, PIPE
-import subprocess
 import vk_api
 import oppadc
-from StartupLoader.StartupLoader import StartupLoader
+from Src.StartupLoader.StartupLoader import StartupLoader
 
 config_loader = StartupLoader('config.JSON')
 

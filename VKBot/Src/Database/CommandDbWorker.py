@@ -1,5 +1,5 @@
-from Database.Connector import DbSession
-from Database.Models import CommandModel
+from Src.Database.Connector import DbSession
+from Src.Database.Models import CommandModel
 
 
 class CommandWorker:

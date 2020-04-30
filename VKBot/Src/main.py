@@ -1,30 +1,17 @@
 import asyncio
-import traceback
 
 from vk_api.longpoll import VkLongPoll, VkEventType
 import vk_api
-from datetime import datetime
 import random
-import time
 import requests
-import json
-import sys
 import logging
-import threading
-from threading import Thread
-from Database.Models import BaseModel
-from Database.osuDbWorker import OsuWorker
-from Database.CommandDbWorker import CommandWorker
-from StartupLoader.StartupLoader import StartupLoader
-from Database.UserDbWorker import UserWorker
-from subprocess import Popen, PIPE
-import subprocess
-import enum
-from bancho import osu_session, OsuApi
-from VkBot import VkBot, VkBan
+from Src.Database.osuDbWorker import OsuWorker
+from Src.Database.CommandDbWorker import CommandWorker
+from Src.StartupLoader.StartupLoader import StartupLoader
+from Src.Database.UserDbWorker import UserWorker
+from Src.bancho import osu_session
+from Src.VkBot import VkBot, VkBan
 import math
-import sched, time
-
 
 # Предзагрузка конфигураций
 config_loader = StartupLoader('config.JSON')

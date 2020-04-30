@@ -1,10 +1,5 @@
-import logging
-
-from peewee import InternalError
-
-from Database.Connector import DbSession
-from Database.Models import UserModel
-from Database.Models.BaseModel import dbhandle
+from Src.Database.Connector import DbSession
+from Src.Database.Models import UserModel
 
 
 class UserWorker:

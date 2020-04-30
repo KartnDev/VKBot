@@ -3,9 +3,9 @@ import inspect
 from vk_api import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 
-from BotFramework.EventSender import ChatEventSender
-from BotFramework.VkAction import VkAction
-from Controllers.ChatMsgController import ChatMsgController
+from Src.BotFramework.EventSender import ChatEventSender
+from Src.BotFramework.VkAction import VkAction
+from Src.Controllers.ChatMsgController import ChatMsgController
 
 
 class LongPollHandler:
