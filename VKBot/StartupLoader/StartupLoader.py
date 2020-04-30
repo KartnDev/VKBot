@@ -28,5 +28,6 @@ class StartupLoader:
 
     def get_vk_token(self) -> str:
         return self.data['token']
+
     def get_osu_token(self) -> str:
         return self.data['osu_token']

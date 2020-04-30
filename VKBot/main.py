@@ -35,8 +35,9 @@ command_worker = CommandWorker()
 osu_worker = OsuWorker()
 
 # Загрузка листов из БД
-commands = command_worker.select_all()
+
 users = user_worker.select_all()
+commands = command_worker.select_all()
 nicks = osu_worker.select_all()
 names = command_worker.select_all_name()
 

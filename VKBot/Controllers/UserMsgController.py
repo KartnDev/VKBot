@@ -25,5 +25,9 @@ class ChatMsgController:
         print(event_sender.event['attachment'])
 
     @HandleMessage(msg="!Bye")
-    def retw_TO(self, event_sender: ChatEventSender):
+    def ret(self, event_sender: ChatEventSender):
         self.vk.send_message('Hello from bot')
+
+    @HandleMessage
+    def on_map_request(self, map_id: int):
+        pass
