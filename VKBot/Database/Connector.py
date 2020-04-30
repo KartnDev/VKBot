@@ -1,6 +1,6 @@
 import logging
 
-import mysql as mysql
+
 
 from Database.Models import BaseModel, OsuModel, CommandModel
 from Database.Models.BaseModel import dbhandle, InternalError
@@ -11,23 +11,23 @@ class DbSession:
         в аргументы принимает модель таблицы с котоорой будет работать"""
 
     def __init__(self):
+        # sync version of driver
         self.connection = mysql.connector.connect(host='localhost',
                                              database='KartonDot',
                                              user='root',
                                              password='zxc123')
 
-
-
-
-
-    def _base_select(self, select: str):
+    def _base_select(self, select: str) -> object:
         """
+
         Args:
             select: str type that will be executed in DataBase
 
         Returns:
             object: if select was success
             NoneType: if select was failed
+        Raises:
+            Exception that
         """
         records = None
         cursor = None
@@ -43,17 +43,44 @@ class DbSession:
                 self.connection.close()
                 cursor.close()
         return records
-    """Метод загружает всю таблицу из бд"""
 
-    def select_all_table(self):
-        try:
-            return self.model.select()
-        except InternalError as ex:
-            logging.error("exception were taken " + ex.with_traceback())
-            raise ex
+    def select_all_table(self, table_name: str) -> object:
+        """
+        Gives selected table (all columns)
 
-    def select_top(self):
+        Args:
+            table_name: string of Table that required
 
+        Returns:
+            object: returns iterable top of objects with
+        """
+        return self._base_select("SELECT * FROM {0}".format(table_name))
+
+    def select_top(self, table_name: str, top: int) -> object:
+        """
+        Gives selected top with all columns
+
+        Args:
+            table_name: string of Table that required
+            top: number of needed rows
+
+        Returns:
+            object: returns iterable top of objects with all columns
+        """
+        return self._base_select("SELECT * FROM {0} LIMIT {1}".format(table_name, str(top)))
+
+    def select_all_table(self, column_names: [str], table_name: str) -> object:
+        """
+        Gives selected table (all columns)
+
+        Args:
+            column_names: list of strings that contains names of table's columns
+            table_name: string of Table that required
+
+        Returns:
+            object: returns iterable top of objects with
+        """
+        return self._base_select("SELECT {0} FROM {1}".format(', '.join(name for name in column_names), table_name))
 
     """Метод записи/добавления в таблицу данных
         :argument data : object то что заносится в базу данных (должно совпадать с типом стоблца)
