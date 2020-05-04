@@ -58,11 +58,11 @@ class DbSession:
         else:
             warnings.warn("Already connected!", RuntimeWarning)
 
-    def _base_select(self, select: str) -> Iterable:
+    def _base_execute(self, executed: str) -> Iterable:
         """
 
         Args:
-            select: str type that will be executed in DataBase
+            executed: str type that will be executed in DataBase
 
         Returns:
             Iterable: if select was success
@@ -77,7 +77,7 @@ class DbSession:
         cursor = None
         try:
             cursor = self._connection.cursor()
-            cursor.execute(select)
+            cursor.execute(executed)
             records = cursor.fetchall()
         except Exception as e:
             logging.error(e)
@@ -99,7 +99,7 @@ class DbSession:
             Iterable: returns iterable top of objects with
             NoneType: if select was failed
         """
-        return self._base_select("SELECT * FROM {0}".format(table_name))
+        return self._base_execute("SELECT * FROM {0}".format(table_name))
 
     def select_top(self, table_name: str, top: int) -> Iterable:
         """
@@ -113,7 +113,7 @@ class DbSession:
             Iterable: returns iterable top of objects with all columns
             NoneType: if select was failed
         """
-        return self._base_select("SELECT * FROM {0} LIMIT {1}".format(table_name, str(top)))
+        return self._base_execute("SELECT * FROM {0} LIMIT {1}".format(table_name, str(top)))
 
     def select_all_table(self, column_names: [str], table_name: str) -> Iterable:
         """
@@ -128,7 +128,7 @@ class DbSession:
             Iterable: returns iterable top of objects with
             NoneType: if select was failed
         """
-        return self._base_select("SELECT {0} FROM {1}".format(', '.join(name for name in column_names), table_name))
+        return self._base_execute("SELECT {0} FROM {1}".format(', '.join(name for name in column_names), table_name))
 
     def select_top(self, column_names: [str], table_name: str, top: int) -> Iterable:
         """
@@ -143,8 +143,8 @@ class DbSession:
             Iterable: returns iterable top of objects with all columns
             NoneType: if select was failed
         """
-        return self._base_select("SELECT {0} FROM {1} LIMIT {2}"
-                                 .format(', '.join(name for name in column_names), table_name, str(top)))
+        return self._base_execute("SELECT {0} FROM {1} LIMIT {2}"
+                                  .format(', '.join(name for name in column_names), table_name, str(top)))
 
     async def _connect_to_async(self, loop):
         _async_conn = None
@@ -157,12 +157,12 @@ class DbSession:
             logging.critical(e)
             raise e
 
-    async def _base_select_async(self, select: str, loop) -> Iterable:
+    async def _base_execute_async(self, execute: str, loop) -> Iterable:
         """
             asynchronous version of protected method _base_select
         Args:
             loop (asyncio Async POOL): pool of asyncio io that can be got by call asyncio.get_pool
-            select: str type that will be executed in DataBase
+            execute: str type that will be executed in DataBase
 
         Returns:
             Iterable: if select was success
@@ -174,7 +174,7 @@ class DbSession:
         _as_pool = await self._connect_to_async(loop)
         async with _as_pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute(select)
+                await cur.execute(execute)
                 _aw_pool_result = await cur.fetchall()
         _as_pool.close()
         await _as_pool.wait_closed()
@@ -192,4 +192,55 @@ class DbSession:
             Iterable: returns iterable top of objects with
             NoneType: if select was failed
         """
-        return await self._base_select_async("SELECT * FROM {0}".format(table_name), loop)
+        return await self._base_execute_async("SELECT * FROM {0}".format(table_name), loop)
+
+    async def select_top_async(self, table_name: str, top: int, loop) -> Iterable:
+        """
+                Gives selected top with all columns
+
+                Args:
+                    loop: (asyncio Async POOL): pool of asyncio io that can be got by call asyncio.get_pool
+                    table_name: string of Table that required
+                    top: number of needed rows
+
+                Returns:
+                    Iterable: returns iterable top of objects with all columns
+                    NoneType: if select was failed
+                """
+        return await self._base_execute_async("SELECT * FROM {0} LIMIT {1}".format(table_name, str(top)))
+
+    async def select_all_table_async(self, column_names: [str], table_name: str, loop) -> Iterable:
+        """
+                Overload of select_all_table that's apply names of selected columns
+                Gives selected table (all columns)
+
+                Args:
+                    loop: (asyncio Async POOL): pool of asyncio io that can be got by call asyncio.get_pool
+                    column_names: list of strings that contains names of table's columns
+                    table_name: string of Table that required
+
+                Returns:
+                    Iterable: returns iterable top of objects with
+                    NoneType: if select was failed
+                """
+        return await self._base_execute_async("SELECT {0} FROM {1}"
+                                              .format(', '.join(name for name in column_names), table_name))
+
+    async def select_top_async(self, column_names: [str], table_name: str, top: int) -> Iterable:
+        """
+                Gives selected top with all columns
+
+                Args:
+                    column_names: list of strings that contains names of table's columns
+                    table_name: string of Table that required
+                    top: number of needed rows
+
+                Returns:
+                    Iterable: returns iterable top of objects with all columns
+                    NoneType: if select was failed
+                """
+        return await self._base_execute_async("SELECT {0} FROM {1} LIMIT {2}"
+                                              .format(', '.join(name for name in column_names), table_name, str(top)))
+
+    def insert_into(self, dict_of_inserts):
+        
