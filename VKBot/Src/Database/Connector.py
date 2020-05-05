@@ -94,7 +94,7 @@ class DbConnection:
                 cursor.close()
         return records
 
-    def select_all_table(self, table_name: str):
+    def _select_all_table(self, table_name: str)-> Iterable:
         """
         Gives selected table (all columns)
 
@@ -107,7 +107,7 @@ class DbConnection:
         """
         return self._base_execute("SELECT * FROM {0}".format(table_name))
 
-    def select_top(self, table_name: str, top: int):
+    def _select_top(self, table_name: str, top: int) -> Iterable:
         """
         Gives selected top with all columns
 
@@ -121,24 +121,28 @@ class DbConnection:
         """
         return self._base_execute("SELECT * FROM {0} LIMIT {1}".format(table_name, str(top)))
 
-    def select_all_table(self, column_names: [str], table_name: str):
+    def select_all_table(self, table_name: str, column_names: [str] = None) -> Iterable:
         """
-        Overload of select_all_table that's apply names of selected columns
-        Gives selected table (all columns)
+        Overload of select_all_table that's apply names of _selected columns
+        Gives selected table (all columns or taken args columns)
 
         Args:
-            column_names: list of strings that contains names of table's columns
+            column_names: list of strings that contains names of table's columns (can be null)
             table_name: string of Table that required
 
         Returns:
             Iterable: returns iterable top of objects with
             NoneType: if select was failed
         """
-        return self._base_execute("SELECT {0} FROM {1}".format(', '.join(name for name in column_names), table_name))
+        if column_names is None:
+            return self._select_all_table(table_name)
+        else:
+            return self._base_execute("SELECT {0} FROM {1}"
+                                      .format(', '.join(name for name in column_names), table_name))
 
-    def select_top(self, column_names: [str], table_name: str, top: int) -> Iterable:
+    def select_top(self, table_name: str, top: int, column_names: [str] = None) -> Iterable:
         """
-        Gives selected top with all columns
+        Gives selected top with all columns or taken columns
 
         Args:
             column_names: list of strings that contains names of table's columns
@@ -149,8 +153,11 @@ class DbConnection:
             Iterable: returns iterable top of objects with all columns
             NoneType: if select was failed
         """
-        return self._base_execute("SELECT {0} FROM {1} LIMIT {2}"
-                                  .format(', '.join(name for name in column_names), table_name, str(top)))
+        if column_names is None:
+            return self._select_top(table_name, top)
+        else:
+            return self._base_execute("SELECT {0} FROM {1} LIMIT {2}"
+                                      .format(', '.join(name for name in column_names), table_name, str(top)))
 
     async def _connect_to_async(self, loop):
         _async_conn = None
