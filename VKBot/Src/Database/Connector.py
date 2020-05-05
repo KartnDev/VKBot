@@ -13,6 +13,7 @@ class DbConnVersion(IntEnum):
     ASYNC = 2
     COUPLE = 12
 
+
 # TODO rewrite docstrings
 
 
@@ -46,25 +47,10 @@ class DbConnection:
         self._username = username
         self._database = database
         self._host = host
-        self._connection = mysql.connector.connect(host=self._host,
-                                                   database=self._database,
-                                                   user=self._username,
-                                                   password=self._password)
-        self._connect_to_sync()
 
-    def _connect_to_sync(self):
-        if self._connection.is_connected():
-            try:
-                self._connection.connect(host=self._host, database=self._database,
-                                         user=self._username, password=self._password)
-            except Exception as e:
-                logging.critical(e)
-                raise e
-        else:
-            warnings.warn("Already connected  to database!", RuntimeWarning)
-
-    def _base_execute(self, executed: str):
+    def _base_execute_and_iter(self, executed: str) -> Iterable:
         """
+        Execute str and returns Iterable object
 
         Args:
             executed: str type that will be executed in DataBase
@@ -75,13 +61,15 @@ class DbConnection:
         Raises:
             Exception that was taken by critical runtime error
         """
-        if not self._connection.is_connected():
-            self._connect_to_sync()
+        _connection = mysql.connector.connect(host=self._host,
+                                              database=self._database,
+                                              user=self._username,
+                                              password=self._password)
 
         records = None
         cursor = None
         try:
-            cursor = self._connection.cursor()
+            cursor = _connection.cursor()
             cursor.execute(executed)
             records = cursor.fetchall()
             # TODO rewrite Exception
@@ -89,12 +77,45 @@ class DbConnection:
             logging.error(e)
             raise e
         finally:
-            if self._connection.is_connected():
-                self._connection.close()
+            if _connection.is_connected():
+                _connection.close()
                 cursor.close()
         return records
 
-    def _select_all_table(self, table_name: str)-> Iterable:
+    def _base_execute(self, executed: str):
+        """
+        Only execute str as void function
+
+        Args:
+            executed: str type that will be executed in DataBase
+
+        Returns:
+            NoneType: Void
+        Raises:
+            Exception that was taken by critical runtime error
+        """
+        _connection = mysql.connector.connect(host=self._host,
+                                              database=self._database,
+                                              user=self._username,
+                                              password=self._password)
+
+        records = None
+        cursor = None
+        try:
+            cursor = _connection.cursor()
+            cursor.execute(executed)
+            emp_no = cursor.lastrowid
+            # TODO rewrite Exception
+        except Exception as e:
+            logging.error(e)
+            raise e
+        finally:
+            _connection.commit()
+            if _connection.is_connected():
+                _connection.close()
+                cursor.close()
+
+    def _select_all_table(self, table_name: str) -> Iterable:
         """
         Gives selected table (all columns)
 
@@ -105,7 +126,7 @@ class DbConnection:
             Iterable: returns iterable top of objects with
             NoneType: if select was failed
         """
-        return self._base_execute("SELECT * FROM {0}".format(table_name))
+        return self._base_execute_and_iter("SELECT * FROM {0}".format(table_name))
 
     def _select_top(self, table_name: str, top: int) -> Iterable:
         """
@@ -119,7 +140,7 @@ class DbConnection:
             Iterable: returns iterable top of objects with all columns
             NoneType: if select was failed
         """
-        return self._base_execute("SELECT * FROM {0} LIMIT {1}".format(table_name, str(top)))
+        return self._base_execute_and_iter("SELECT * FROM {0} LIMIT {1}".format(table_name, str(top)))
 
     def select_all_table(self, table_name: str, column_names: [str] = None) -> Iterable:
         """
@@ -137,8 +158,8 @@ class DbConnection:
         if column_names is None:
             return self._select_all_table(table_name)
         else:
-            return self._base_execute("SELECT {0} FROM {1}"
-                                      .format(', '.join(name for name in column_names), table_name))
+            return self._base_execute_and_iter("SELECT {0} FROM {1}"
+                                               .format(', '.join(name for name in column_names), table_name))
 
     def select_top(self, table_name: str, top: int, column_names: [str] = None) -> Iterable:
         """
@@ -156,8 +177,34 @@ class DbConnection:
         if column_names is None:
             return self._select_top(table_name, top)
         else:
-            return self._base_execute("SELECT {0} FROM {1} LIMIT {2}"
-                                      .format(', '.join(name for name in column_names), table_name, str(top)))
+            return self._base_execute_and_iter("SELECT {0} FROM {1} LIMIT {2}"
+                                               .format(', '.join(name for name in column_names), table_name, str(top)))
+
+    def select_where(self, table_name: str, where_condition: dict) -> Iterable:
+        """
+        Method that select ony conditional rows(row)
+
+        Examples:
+            .select_where('my_table', {'id':20000, 'name':'karton'})
+
+            .select_where('my_table', {'id':20000})
+        Args:
+            where_condition(dict key: string, value: object): key value pairs of find operation
+            table_name (str): name of current table that w
+
+        Returns:
+            bool: True if insert operation was success and False if take any Exception
+        """
+
+        return self._base_execute_and_iter("SELECT * FROM {0} WHERE {1}"
+                                           .format(table_name, ' AND '.join("{0}={1}"
+                                                                            .format(item,
+                                                                                    where_condition[item]
+                                                                                    if type(
+                                                                                        where_condition[item]) != str
+                                                                                    else "'" + where_condition[
+                                                                                        item] + "'")
+                                                                            for item in where_condition)))
 
     async def _connect_to_async(self, loop):
         _async_conn = None
@@ -272,11 +319,14 @@ class DbConnection:
         Returns:
             bool: True if insert operation was success and False if take any Exception
         """
+
         try:
             self._base_execute("INSERT INTO {0} ({1}) VALUES ({2})"
                                .format(table_name,
                                        ', '.join(column_name for column_name in dict_of_inserts.keys()),
-                                       ', '.join(column_value for column_value in dict_of_inserts.values())))
+                                       ', '.join(str(column_value) if type(column_value) != str
+                                                 else "'" + str(column_value) + "'"
+                                                 for column_value in dict_of_inserts.values())))
             return True
         except Exception as e:
             logging.warn("Insert failed and exception was taken {}".format(e))
@@ -302,7 +352,7 @@ class DbConnection:
                 for i, item in enumerate(where_condition):
                     # TODO add here any case where + len > 1
                     where_condition += "{0}={1}".format(item.key(), item.value())
-                self._base_execute("DELETE FROM {0} WHERE {1}".format(table_name, where_condition))
+                self._base_execute_and_iter("DELETE FROM {0} WHERE {1}".format(table_name, where_condition))
                 return True
             else:
                 raise NotImplementedError("Uses only one condition in where statement")
@@ -328,7 +378,6 @@ class DbConnection:
             if len(where_condition) == 1:
                 where_str = ""
                 for i, item in enumerate(where_condition):
-
                     where_condition += "{0}={1}".format(item.key(), item.value())
 
                 updates_str = ""
@@ -338,7 +387,7 @@ class DbConnection:
                     if i != len(dict_of_updates) - 1:
                         updates_str += ", "
 
-                self._base_execute("UPDATE {0} SET {1} WHERE {2}".format(table_name, updates_str, where_str))
+                self._base_execute_and_iter("UPDATE {0} SET {1} WHERE {2}".format(table_name, updates_str, where_str))
                 return True
             else:
                 # TODO add here any case where + len > 1

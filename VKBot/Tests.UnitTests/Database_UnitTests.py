@@ -54,5 +54,55 @@ class ConnectorDataBaseTest(unittest.TestCase):
             print(dr_item, " | ", conn_item)
             self.assertEqual(dr_item, conn_item)
 
+    def test_select_where(self):
+        _database = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306)
+        query_connector = _database.select_where(table_name='users', where_condition={'id': 1})
+
+        _driver = mysql.connector.connect(host='localhost', database='mysql', user='root', password='zxc123')
+        _cur = _driver.cursor()
+        _cur.execute("select * from Kartonbot.users where id=1")
+        query_driver = _cur.fetchall()
+        for dr_item, conn_item in zip(query_driver, query_connector):
+            print(dr_item, " | ", conn_item)
+            self.assertEqual(dr_item, conn_item)
+
+        query_connector = _database.select_where(table_name='users', where_condition={'id': 1,
+                                                                                      'association': 'Дима'})
+
+        _cur.execute("select * from Kartonbot.users where id=1 AND association='Дима'")
+        query_driver = _cur.fetchall()
+        for dr_item, conn_item in zip(query_driver, query_connector):
+            print(dr_item, " | ", conn_item)
+            self.assertEqual(dr_item, conn_item)
+
     def test_insert_into(self):
-        
+        _database = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306)
+        query_connector = _database.insert_into('users', {'association': 'asc',
+                                                          'access_level': 1,
+                                                          'vk_id': 13372281,
+                                                          'lvl_exp': 1.0})
+
+        _driver = mysql.connector.connect(host='localhost', database='mysql', user='root', password='zxc123')
+        _cur = _driver.cursor()
+        _cur.execute("select * from Kartonbot.users where id=4")
+        query_driver = _cur.fetchall()
+        for dr_item, first_item in zip(query_driver, [(100, 1, 13372281, 'asc', 1.0)]):
+            print(dr_item, " | ", first_item)
+            self.assertEqual(dr_item, first_item)
+
+    def test_delete_where(self):
+        _database = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306)
+        query_connector = _database.insert_into('users', {'association': 'asc',
+                                                          'access_level': 1,
+                                                          'vk_id': 13372281,
+                                                          'lvl_exp': 1.0})
+
+        _driver = mysql.connector.connect(host='localhost', database='mysql', user='root', password='zxc123')
+        _cur = _driver.cursor()
+        _cur.execute("select * from Kartonbot.users where id=4")
+        query_driver = _cur.fetchall()
+        for dr_item, first_item in zip(query_driver, [(100, 1, 13372281, 'asc', 1.0)]):
+            print(dr_item, " | ", first_item)
+            self.assertEqual(dr_item, first_item)
+
+
