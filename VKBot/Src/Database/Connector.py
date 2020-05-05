@@ -120,22 +120,22 @@ class DbConnection:
             NoneType: if select was failed
         """
         return self._base_execute("SELECT * FROM {0} LIMIT {1}".format(table_name, str(top)))
-    """
+
     def select_all_table(self, column_names: [str], table_name: str):
-        '
+        """
         Overload of select_all_table that's apply names of selected columns
         Gives selected table (all columns)
 
         Args:
             column_names: list of strings that contains names of table's columns
             table_name: string of Table that required
-        '
+
         Returns:
             Iterable: returns iterable top of objects with
             NoneType: if select was failed
-        
+        """
         return self._base_execute("SELECT {0} FROM {1}".format(', '.join(name for name in column_names), table_name))
-    """
+
     def select_top(self, column_names: [str], table_name: str, top: int) -> Iterable:
         """
         Gives selected top with all columns
