@@ -16,7 +16,7 @@ class DbConnVersion(IntEnum):
 # TODO rewrite docstrings
 
 
-class DbSession:
+class DbConnection:
     def __init__(self, host: str, database: str, username: str, password: str, port: int,
                  driver_ver: DbConnVersion = DbConnVersion.COUPLE):
         """
@@ -46,11 +46,14 @@ class DbSession:
         self._username = username
         self._database = database
         self._host = host
-        self._connection = mysql.connector.MySQLConnection()
+        self._connection = mysql.connector.connect(host=self._host,
+                                                   database=self._database,
+                                                   user=self._username,
+                                                   password=self._password)
         self._connect_to_sync()
 
     def _connect_to_sync(self):
-        if self._connection.MySQLConnection.is_connected():
+        if self._connection.is_connected():
             try:
                 self._connection.connect(host=self._host, database=self._database,
                                          user=self._username, password=self._password)
@@ -58,9 +61,9 @@ class DbSession:
                 logging.critical(e)
                 raise e
         else:
-            warnings.warn("Already connected!", RuntimeWarning)
+            warnings.warn("Already connected  to database!", RuntimeWarning)
 
-    def _base_execute(self, executed: str) -> Iterable:
+    def _base_execute(self, executed: str):
         """
 
         Args:
@@ -91,7 +94,7 @@ class DbSession:
                 cursor.close()
         return records
 
-    def select_all_table(self, table_name: str) -> Iterable:
+    def select_all_table(self, table_name: str):
         """
         Gives selected table (all columns)
 
@@ -104,7 +107,7 @@ class DbSession:
         """
         return self._base_execute("SELECT * FROM {0}".format(table_name))
 
-    def select_top(self, table_name: str, top: int) -> Iterable:
+    def select_top(self, table_name: str, top: int):
         """
         Gives selected top with all columns
 
@@ -117,22 +120,22 @@ class DbSession:
             NoneType: if select was failed
         """
         return self._base_execute("SELECT * FROM {0} LIMIT {1}".format(table_name, str(top)))
-
-    def select_all_table(self, column_names: [str], table_name: str) -> Iterable:
-        """
+    """
+    def select_all_table(self, column_names: [str], table_name: str):
+        '
         Overload of select_all_table that's apply names of selected columns
         Gives selected table (all columns)
 
         Args:
             column_names: list of strings that contains names of table's columns
             table_name: string of Table that required
-
+        '
         Returns:
             Iterable: returns iterable top of objects with
             NoneType: if select was failed
-        """
+        
         return self._base_execute("SELECT {0} FROM {1}".format(', '.join(name for name in column_names), table_name))
-
+    """
     def select_top(self, column_names: [str], table_name: str, top: int) -> Iterable:
         """
         Gives selected top with all columns

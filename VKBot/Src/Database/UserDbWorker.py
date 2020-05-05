@@ -1,13 +1,14 @@
-from Src.Database.Connector import DbSession
+from Src.Database.Connector import DbConnection
 from Src.Database.Models import UserModel
 
 
 class UserWorker:
     def __init__(self):
-        self.db = DbSession(UserModel.UserModel)
+        self.table_name = 'users'
+        self.db = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306)
 
     def select_all(self):
-        data = self.db.select_all_table()
+        data = self.db.select_all_table(self.table_name)
         items = []
         for item in data:
             items.append({

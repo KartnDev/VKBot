@@ -1,11 +1,11 @@
-from Src.Database.Connector import DbSession
+from Src.Database.Connector import DbConnection
 from Src.Database.Models import OsuModel
 
 
 class OsuWorker:
 
     def __init__(self):
-        self.db = DbSession(OsuModel.OsuModel)
+        self.db = DbConnection(OsuModel.OsuModel)
 
     def select_all(self):
         data = self.db.select_all_table()

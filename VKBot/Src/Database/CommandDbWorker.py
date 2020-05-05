@@ -1,11 +1,11 @@
-from Src.Database.Connector import DbSession
+from Src.Database.Connector import DbConnection
 from Src.Database.Models import CommandModel
 
 
 class CommandWorker:
 
     def __init__(self):
-        self.db = DbSession(CommandModel.CommandModel)
+        self.db = DbConnection(CommandModel.CommandModel)
 
     def select_all(self):
         data = self.db.select_all_table()
