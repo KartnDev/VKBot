@@ -347,17 +347,18 @@ class DbConnection:
             bool: True if insert operation was success and False if take any Exception
         """
         try:
+            # TODO rewrite
             if len(where_condition) == 1:
                 where_str = ""
                 for i, item in enumerate(where_condition):
                     # TODO add here any case where + len > 1
-                    where_condition += "{0}={1}".format(item.key(), item.value())
-                self._base_execute_and_iter("DELETE FROM {0} WHERE {1}".format(table_name, where_condition))
+                    where_str += "{0}={1}".format(item, where_condition[item])
+                self._base_execute("DELETE FROM {0} WHERE {1}".format(table_name, where_str))
                 return True
             else:
                 raise NotImplementedError("Uses only one condition in where statement")
         except Exception as e:
-            logging.warn("Delete failed and exception was taken {0}".format(e))
+            logging.warning("Delete failed and exception was taken {0}".format(e))
             return False
 
     def update_where(self, table_name: str, where_condition: dict, dict_of_updates: dict) -> bool:
@@ -375,25 +376,23 @@ class DbConnection:
             bool: True if insert operation was success and False if take any Exception
         """
         try:
-            if len(where_condition) == 1:
-                where_str = ""
-                for i, item in enumerate(where_condition):
-                    where_condition += "{0}={1}".format(item.key(), item.value())
-
-                updates_str = ""
-
-                for i, seq in enumerate(dict_of_updates):
-                    updates_str += "{0}={1}".format(seq.key(), str(seq.value()))
-                    if i != len(dict_of_updates) - 1:
-                        updates_str += ", "
-
-                self._base_execute_and_iter("UPDATE {0} SET {1} WHERE {2}".format(table_name, updates_str, where_str))
-                return True
-            else:
-                # TODO add here any case where + len > 1
-                raise NotImplementedError("Uses only one condition in where statement")
+            var = "UPDATE {0} SET {1} WHERE {2}".format(table_name,
+                                                        ', '.join("{0}={1}".format(item,
+                                                                                   dict_of_updates[item]
+                                                                                   if type(dict_of_updates[item]) != str
+                                                                                   else "'" + dict_of_updates[
+                                                                                       item] + "'")
+                                                                  for item in dict_of_updates),
+                                                        ' AND '.join("{0}={1}"
+                                                                     .format(item,
+                                                                             where_condition[item]
+                                                                             if type(where_condition[item]) != str
+                                                                             else "'" + where_condition[item] + "'")
+                                                                     for item in where_condition))
+            self._base_execute(var)
+            return True
         except Exception as e:
-            logging.warn("Update failed and exception was taken {}".format(e))
+            logging.warning("Update failed and exception was taken {}".format(e))
             return False
 
     async def insert_into_async(self, table_name: str, dict_of_inserts: dict, loop) -> bool:
@@ -419,7 +418,7 @@ class DbConnection:
                                            loop)
             return True
         except Exception as e:
-            logging.warn("Insert failed and exception was taken {}".format(e))
+            logging.warning("Insert failed and exception was taken {}".format(e))
             return False
 
     async def delete_where_async(self, table_name: str, where_condition: dict, loop) -> bool:
