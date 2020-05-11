@@ -117,3 +117,6 @@ class ConnectorDataBaseTest(unittest.TestCase):
         print(_first, " != ", _last)
         self.assertNotEqual(_first, _last)
         self.assertEqual(_last, [(1, 1, 376359640, 'dima', 0.9)])
+
+class UserWorkerTests:
+    pass
