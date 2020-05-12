@@ -1,38 +1,49 @@
-from Src.Database.Connector import DbConnection
+import logging
+from collections import Iterable
+
+from Src.Database.Connector import DbConnection, DbConnVersion
 from Src.Database.Models import UserModel
 
 
 class UserWorker:
     def __init__(self):
         self.table_name = 'users'
-        self.db = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306)
+        self.db = DbConnection('localhost', 'KartonDCP', 'root', 'zxc123', 3306, DbConnVersion.SYNC)
 
-    def select_all(self):
-        data = self.db.select_all_table(self.table_name)
+    def select_all(self) -> Iterable:
+        data = self.db.select_all_table(self.table_name, ['access_level', 'vk_id', 'association', 'lvl_exp'])
         items = []
         for item in data:
             items.append({
-                'access_level': item.access_level,
-                'vk_id': item.vk_id,
-                'association': item.association})
+                'access_level': item[0],
+                'vk_id': item[1],
+                'association': item[2],
+                'lvl_exp': item[3]})
 
         return items
 
-    def insert(self, access_level: int, vk_id: int, association: str):
-        row = UserModel.UserModel(access_level=access_level, vk_id=vk_id, association=association)
-        self.db.insert(row)
+    def insert(self, access_level: int, vk_id: int, association: str, level_exp=0) -> bool:
+        return self.db.insert_into(self.table_name, {'access_level': access_level,
+                                                     'vk_id': vk_id,
+                                                     'association': association,
+                                                     'lvl_exp': level_exp})
 
     def delete(self, vk_id: int):
-        user = UserModel.UserModel.get(UserModel.UserModel.vk_id == vk_id)
-        self.db.delete(user)
+        return self.db.delete_where(self.table_name, {'vk_id': vk_id})
 
-    def update(self, vk_id, association: str = None, level: int = None):
-        row = UserModel.UserModel.get(UserModel.UserModel.vk_id == vk_id)
-        self.db.delete(row)
-        if (association is not None) and (level is not None):
-            row = UserModel.UserModel(access_level=level, vk_id=vk_id, association=association)
-            self.db.insert(row)
-        elif (association is not None) and (level is None):
-            pass
-#userworker=UserWorker()
-#userworker.update(161959141,'9, 'mouse')
+    def update(self, vk_id, association: str = None, level: int = None, exp: float = None) -> bool:
+
+        args = locals()
+
+        if any(args.values()) is not None:
+            dict_of_updates = {}
+            if association is not None:
+                dict_of_updates.update({'association': association})
+            if level is not None:
+                dict_of_updates.update({'access_level': level})
+            if exp is not None:
+                dict_of_updates.update({'lvl_exp': exp})
+            return self.db.update_where(self.table_name, {'vk_id': vk_id}, dict_of_updates)
+        else:
+            logging.warning('taken zero params and cannot be any update..')
+            return False
