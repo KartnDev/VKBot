@@ -118,5 +118,16 @@ class ConnectorDataBaseTest(unittest.TestCase):
         self.assertNotEqual(_first, _last)
         self.assertEqual(_last, [(1, 1, 376359640, 'dima', 0.9)])
 
-class UserWorkerTests:
-    pass
+class UserWorkerTest(unittest.TestCase):
+    def test_select_all(self):
+        pass
+
+    def test_insert(self):
+        pass
+
+    def test_delete(self):
+        pass
+
+    def test_update(self):
+        pass
+

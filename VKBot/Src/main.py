@@ -5,7 +5,7 @@ import vk_api
 import random
 import requests
 import logging
-from Src.Database.osuDbWorker import OsuWorker
+from Src.Database.OsuDbWorker import OsuWorker
 from Src.Database.CommandDbWorker import CommandWorker
 from Src.StartupLoader.StartupLoader import StartupLoader
 from Src.Database.UserDbWorker import UserWorker

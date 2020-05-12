@@ -34,7 +34,6 @@ class UserWorker:
     def update(self, vk_id, association: str = None, level: int = None, exp: float = None) -> bool:
 
         args = locals()
-
         if any(args.values()) is not None:
             dict_of_updates = {}
             if association is not None:
