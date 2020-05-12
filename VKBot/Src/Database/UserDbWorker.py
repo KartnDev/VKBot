@@ -28,7 +28,7 @@ class UserWorker:
                                                      'association': association,
                                                      'lvl_exp': level_exp})
 
-    def delete(self, vk_id: int):
+    def delete(self, vk_id: int) -> bool:
         return self.db.delete_where(self.table_name, {'vk_id': vk_id})
 
     def update(self, vk_id, association: str = None, level: int = None, exp: float = None) -> bool:
