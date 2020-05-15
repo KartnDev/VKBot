@@ -353,7 +353,10 @@ class DbConnection:
                 where_str = ""
                 for i, item in enumerate(where_condition):
                     # TODO add here any case where + len > 1
-                    where_str += "{0}={1}".format(item, where_condition[item])
+                    where_str += "{0}={1}".format(item, where_condition[item]
+                    if type(where_condition[item]) != str
+                    else "'" + where_condition[item] + "'")
+                    print("DELETE FROM {0} WHERE {1}".format(table_name, where_str))
                 self._base_execute("DELETE FROM {0} WHERE {1}".format(table_name, where_str))
                 return True
             else:

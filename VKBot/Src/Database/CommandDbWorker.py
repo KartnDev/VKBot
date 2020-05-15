@@ -4,10 +4,10 @@ from Src.Database.Connector import DbConnection, DbConnVersion
 from Src.Database.Models import CommandModel
 
 
-class CommandWorker:
+class CommandDbWorker:
 
     def __init__(self):
-        self.db = DbConnection('localhost', 'KartonDCP', 'root', 'zxc123', 3306, DbConnVersion.SYNC)
+        self.db = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306, DbConnVersion.SYNC)
         self.table_name = 'categories'
 
     def select_all(self):

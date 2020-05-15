@@ -2,7 +2,7 @@ import json
 import logging
 import pathlib
 
-from Src.Database.CommandDbWorker import CommandWorker
+from Src.Database.CommandDbWorker import CommandDbWorker
 from Src.Database.UserDbWorker import UserDbWorker
 
 
@@ -17,7 +17,7 @@ class StartupLoader:
         return user_worker.select_all()
 
     def load_commands_list(self) -> list:
-        command_worker = CommandWorker()
+        command_worker = CommandDbWorker()
         return command_worker.select_all()
 
     def get_admin_id(self) -> int:

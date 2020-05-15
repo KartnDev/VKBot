@@ -6,7 +6,7 @@ import random
 import requests
 import logging
 from Src.Database.OsuDbWorker import OsuWorker
-from Src.Database.CommandDbWorker import CommandWorker
+from Src.Database.CommandDbWorker import CommandDbWorker
 from Src.StartupLoader.StartupLoader import StartupLoader
 from Src.Database.UserDbWorker import UserDbWorker
 from Src.bancho import osu_session
@@ -20,7 +20,7 @@ admin_id_int = config_loader.get_admin_id()
 
 # Создание БД воркеров
 user_worker = UserDbWorker()
-command_worker = CommandWorker()
+command_worker = CommandDbWorker()
 osu_worker = OsuWorker()
 
 # Загрузка листов из БД

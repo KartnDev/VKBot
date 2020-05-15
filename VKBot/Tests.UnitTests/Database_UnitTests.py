@@ -1,13 +1,7 @@
 import unittest
-from collections import Sized
-from typing import Iterable
-
 import mysql.connector
-
+from Src.Database.CommandDbWorker import CommandDbWorker
 from Src.Database.Connector import DbConnection
-
-
-# noinspection DuplicatedCode
 from Src.Database.UserDbWorker import UserDbWorker
 
 
@@ -180,19 +174,59 @@ class UserDbWorkerTest(unittest.TestCase):
         self.assertEqual(_new_row[3], 'дима')
 
 
-
 class CommandDbWorkerTest(unittest.TestCase):
     def test_select_all(self):
-        pass
+        command_worker = CommandDbWorker()
+        data_from_worker = command_worker.select_all()
+
+        _database = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306)
+        _pure_data = _database.select_all_table('categories', ['access_level', 'name', 'value', 'attachment'])
+        for taken_item, action in zip(_pure_data, data_from_worker):
+            print(taken_item, " | ", action)
+            self.assertEqual(taken_item[0], action['access_level'])
+            self.assertEqual(taken_item[1], action['name'])
+            self.assertEqual(taken_item[2], action['value'])
+            self.assertEqual(taken_item[3], action['attachment'])
 
     def test_insert(self):
-        pass
+        command_worker = CommandDbWorker()
+        _database = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306)
+
+        command_worker.insert(23, '12345671', 'mobysafdsasffdsafsdfdsafDickDuck', '1000.1')
+
+        _new_data = _database.select_where('categories', {'name': '12345671'})
+        print(_new_data[0])
+        self.assertEqual(_new_data[0][1], 23)
+        self.assertEqual(_new_data[0][2], '12345671')
+        self.assertEqual(_new_data[0][3], 'mobysafdsasffdsafsdfdsafDickDuck')
+        self.assertEqual(_new_data[0][4], '1000.1')
 
     def test_delete(self):
-        pass
+        command_worker = CommandDbWorker()
+        _old_c_list = command_worker.select_all()
+
+        self.assertTrue([item for item in _old_c_list if item['name'] == 'QQ'] != [])
+        self.assertTrue(command_worker.delete('QQ'))
+        _new_c_list = command_worker.select_all()
+
+        for _old, _new in zip(_old_c_list, _new_c_list):
+            print(_old, ' | ', _new)
+        self.assertEqual(len(_old_c_list), len(_new_c_list) + 1)
+        self.assertEqual([item for item in _new_c_list if item['name'] == 'QQ'], [])
 
     def test_update(self):
-        pass
+        _database = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306)
+        _old_с_row = _database.select_where('categories', {'name': '1000'})[0]
+
+        self.assertNotEqual(_old_с_row[3], '!hi')
+        self.assertEqual(_old_с_row[3], 'ihjpds')
+
+        command_worker = CommandDbWorker()
+        command_worker.update('1000', value='!hi')
+
+        _new_row = _database.select_where('categories', {'name': '1000'})[0]
+
+        self.assertEqual(_new_row[3], '!hi')
 
 
 class OsuDbWorkerTest(unittest.TestCase):
