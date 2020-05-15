@@ -5,14 +5,14 @@ from Src.Database.Connector import DbConnection, DbConnVersion
 from Src.Database.Models import OsuModel
 
 
-class OsuWorker:
+class OsuDbWorker:
 
     def __init__(self):
-        self.db = DbConnection('localhost', 'KartonDCP', 'root', 'zxc123', 3306, DbConnVersion.SYNC)
+        self.db = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306, DbConnVersion.SYNC)
         self.table_name = 'osu'
 
     def select_all(self) -> Iterable:
-        data = self.db.select_all_table(self.table_name)
+        data = self.db.select_all_table(self.table_name, ['vk_id', 'nickname', 'mode'])
         items = []
         for item in data:
             items.append({

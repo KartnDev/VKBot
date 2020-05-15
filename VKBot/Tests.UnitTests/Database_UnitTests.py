@@ -2,6 +2,7 @@ import unittest
 import mysql.connector
 from Src.Database.CommandDbWorker import CommandDbWorker
 from Src.Database.Connector import DbConnection
+from Src.Database.OsuDbWorker import OsuDbWorker
 from Src.Database.UserDbWorker import UserDbWorker
 
 
@@ -216,10 +217,10 @@ class CommandDbWorkerTest(unittest.TestCase):
 
     def test_update(self):
         _database = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306)
-        _old_с_row = _database.select_where('categories', {'name': '1000'})[0]
+        _old_c_row = _database.select_where('categories', {'name': '1000'})[0]
 
-        self.assertNotEqual(_old_с_row[3], '!hi')
-        self.assertEqual(_old_с_row[3], 'ihjpds')
+        self.assertNotEqual(_old_c_row[3], '!hi')
+        self.assertEqual(_old_c_row[3], 'ihjpds')
 
         command_worker = CommandDbWorker()
         command_worker.update('1000', value='!hi')
@@ -231,13 +232,61 @@ class CommandDbWorkerTest(unittest.TestCase):
 
 class OsuDbWorkerTest(unittest.TestCase):
     def test_select_all(self):
-        pass
+        _osu_wr = OsuDbWorker()
+        data_from_worker = _osu_wr.select_all()
+
+        _database = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306)
+        _pure_data = _database.select_all_table('osu', ['vk_id', 'nickname', 'mode'])
+        for taken_item, action in zip(_pure_data, data_from_worker):
+            print(taken_item, " | ", action)
+            self.assertEqual(taken_item[0], action['vk_id'])
+            self.assertEqual(taken_item[1], action['nickname'])
+            self.assertEqual(taken_item[2], action['mode'])
 
     def test_insert(self):
-        pass
+        _osu_wr = OsuDbWorker()
+        _database = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306)
+
+        _osu_wr.insert(23312321, 'negative', 1)
+
+        _new_data = _database.select_where('osu', {'vk_id': 23312321})
+        print(_new_data[0])
+        self.assertEqual(_new_data[0][1], 23312321)
+        self.assertEqual(_new_data[0][2], 'negative')
+        self.assertEqual(_new_data[0][3], 1)
 
     def test_delete(self):
-        pass
+        _osu_wr = OsuDbWorker()
+        _old_o_list = _osu_wr.select_all()
+
+        self.assertTrue([item for item in _old_o_list if item['vk_id'] == 123221] != [])
+        self.assertTrue(_osu_wr.delete(123221))
+        _new_c_list = _osu_wr.select_all()
+
+        for _old, _new in zip(_old_o_list, _new_c_list):
+            print(_old, ' | ', _new)
+        self.assertEqual(len(_old_o_list), len(_new_c_list) + 1)
+        self.assertEqual([item for item in _new_c_list if item['vk_id'] == 123221], [])
 
     def test_update(self):
-        pass
+        _database = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306)
+        _old_o_row = _database.select_where('osu', {'vk_id': 12312321})[0]
+
+        self.assertNotEqual(_old_o_row[2], 'pupa')
+        self.assertEqual(_old_o_row[2], 'biba')
+
+        _osu_wr = OsuDbWorker()
+        _osu_wr.update(12312321, nickname='pupa')
+
+        _new_row = _database.select_where('osu', {'vk_id': 12312321})[0]
+
+        self.assertEqual(_new_row[2], 'pupa')
+
+    def test_select_one(self):
+        _database = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306)
+        _old_o_row = _database.select_where('osu', {'vk_id': 12312321})[0]
+
+        _osu_wr = OsuDbWorker()
+        _new_row = _osu_wr.select_one('12312321')[0]
+
+        self.assertEqual(_old_o_row, _new_row)

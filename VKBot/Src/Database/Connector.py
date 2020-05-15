@@ -196,7 +196,15 @@ class DbConnection:
         Returns:
             bool: True if insert operation was success and False if take any Exception
         """
-
+        print("SELECT * FROM {0} WHERE {1}"
+                                           .format(table_name, ' AND '.join("{0}={1}"
+                                                                            .format(item,
+                                                                                    where_condition[item]
+                                                                                    if type(
+                                                                                        where_condition[item]) != str
+                                                                                    else "'" + where_condition[
+                                                                                        item] + "'")
+                                                                            for item in where_condition)))
         return self._base_execute_and_iter("SELECT * FROM {0} WHERE {1}"
                                            .format(table_name, ' AND '.join("{0}={1}"
                                                                             .format(item,

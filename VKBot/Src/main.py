@@ -5,7 +5,7 @@ import vk_api
 import random
 import requests
 import logging
-from Src.Database.OsuDbWorker import OsuWorker
+from Src.Database.OsuDbWorker import OsuDbWorker
 from Src.Database.CommandDbWorker import CommandDbWorker
 from Src.StartupLoader.StartupLoader import StartupLoader
 from Src.Database.UserDbWorker import UserDbWorker
@@ -21,7 +21,7 @@ admin_id_int = config_loader.get_admin_id()
 # Создание БД воркеров
 user_worker = UserDbWorker()
 command_worker = CommandDbWorker()
-osu_worker = OsuWorker()
+osu_worker = OsuDbWorker()
 
 # Загрузка листов из БД
 
