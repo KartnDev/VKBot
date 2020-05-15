@@ -1,10 +1,16 @@
 import unittest
+from collections import Sized
+from typing import Iterable
+
 import mysql.connector
 
 from Src.Database.Connector import DbConnection
 
 
 # noinspection DuplicatedCode
+from Src.Database.UserDbWorker import UserDbWorker
+
+
 class ConnectorDataBaseTest(unittest.TestCase):
 
     def test_select_all_table(self):
@@ -121,16 +127,58 @@ class ConnectorDataBaseTest(unittest.TestCase):
 
 class UserDbWorkerTest(unittest.TestCase):
     def test_select_all(self):
-        pass
+        users_worker = UserDbWorker()
+        data_from_worker = users_worker.select_all()
+
+        _database = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306)
+        _pure_data = _database.select_all_table('users', ['access_level', 'vk_id', 'association', 'lvl_exp'])
+        for taken_item, action in zip(_pure_data, data_from_worker):
+            print(taken_item, " | ", action)
+            self.assertEqual(taken_item[0], action['access_level'])
+            self.assertEqual(taken_item[1], action['vk_id'])
+            self.assertEqual(taken_item[2], action['association'])
+            self.assertEqual(taken_item[3], action['lvl_exp'])
 
     def test_insert(self):
-        pass
+        _database = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306)
+
+        users_worker = UserDbWorker()
+        users_worker.insert(23, 1234567, 'mobyDickDuck', 1000.1)
+
+        _new_data = _database.select_where('users', {'vk_id': 1234567})
+        print(_new_data[0])
+        self.assertEqual(_new_data[0][1], 23)
+        self.assertEqual(_new_data[0][2], 1234567)
+        self.assertEqual(_new_data[0][3], 'mobyDickDuck')
+        self.assertEqual(_new_data[0][4], 1000.1)
 
     def test_delete(self):
-        pass
+        users_worker = UserDbWorker()
+        _old_list = users_worker.select_all()
+
+        self.assertTrue([item for item in _old_list if item['vk_id'] == 22813311] != [])
+        self.assertTrue(users_worker.delete(22813311))
+        _new_list = users_worker.select_all()
+
+        for _old, _new in zip(_old_list, _new_list):
+            print(_old, ' | ', _new)
+        self.assertEqual(len(_old_list), len(_new_list) + 1)
+        self.assertEqual([item for item in _new_list if item['vk_id'] == 22813311], [])
 
     def test_update(self):
-        pass
+        _database = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306)
+        _old_row = _database.select_where('users', {'vk_id': 376359640})[0]
+
+        self.assertNotEqual(_old_row[3], 'дима')
+        self.assertEqual(_old_row[3], 'dima')
+
+        users_worker = UserDbWorker()
+        users_worker.update(376359640, association='дима')
+
+        _new_row = _database.select_where('users', {'vk_id': 376359640})[0]
+
+        self.assertEqual(_new_row[3], 'дима')
+
 
 
 class CommandDbWorkerTest(unittest.TestCase):

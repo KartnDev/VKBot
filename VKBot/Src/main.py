@@ -8,7 +8,7 @@ import logging
 from Src.Database.OsuDbWorker import OsuWorker
 from Src.Database.CommandDbWorker import CommandWorker
 from Src.StartupLoader.StartupLoader import StartupLoader
-from Src.Database.UserDbWorker import UserWorker
+from Src.Database.UserDbWorker import UserDbWorker
 from Src.bancho import osu_session
 from Src.VkBot import VkBot, VkBan
 import math
@@ -19,7 +19,7 @@ config_loader = StartupLoader('config.JSON')
 admin_id_int = config_loader.get_admin_id()
 
 # Создание БД воркеров
-user_worker = UserWorker()
+user_worker = UserDbWorker()
 command_worker = CommandWorker()
 osu_worker = OsuWorker()
 

@@ -1,4 +1,5 @@
 import asyncio
+from collections import Sized
 from enum import IntEnum
 from collections.abc import Iterable
 import warnings
@@ -152,7 +153,7 @@ class DbConnection:
             table_name: string of Table that required
 
         Returns:
-            Iterable: returns iterable top of objects with
+            Iterable and Sized: returns iterable top of objects with
             NoneType: if select was failed
         """
         if column_names is None:

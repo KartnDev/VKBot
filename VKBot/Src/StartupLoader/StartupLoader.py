@@ -3,7 +3,7 @@ import logging
 import pathlib
 
 from Src.Database.CommandDbWorker import CommandWorker
-from Src.Database.UserDbWorker import UserWorker
+from Src.Database.UserDbWorker import UserDbWorker
 
 
 class StartupLoader:
@@ -13,7 +13,7 @@ class StartupLoader:
             self.data = json.load(json_file)
 
     def load_users_list(self) -> list:
-        user_worker = UserWorker()
+        user_worker = UserDbWorker()
         return user_worker.select_all()
 
     def load_commands_list(self) -> list:

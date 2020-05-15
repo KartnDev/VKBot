@@ -1,14 +1,14 @@
 import logging
-from collections import Iterable
+from collections import Iterable, Sized
 
 from Src.Database.Connector import DbConnection, DbConnVersion
 from Src.Database.Models import UserModel
 
 
-class UserWorker:
+class UserDbWorker:
     def __init__(self):
         self.table_name = 'users'
-        self.db = DbConnection('localhost', 'KartonDCP', 'root', 'zxc123', 3306, DbConnVersion.SYNC)
+        self.db = DbConnection('localhost', 'KartonBot', 'root', 'zxc123', 3306, DbConnVersion.SYNC)
 
     def select_all(self) -> Iterable:
         data = self.db.select_all_table(self.table_name, ['access_level', 'vk_id', 'association', 'lvl_exp'])
