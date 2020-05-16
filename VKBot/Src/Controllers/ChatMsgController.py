@@ -25,7 +25,7 @@ class ChatMsgController:
         print(event_sender.event['attachment'])
 
     @HandleMessage(msg="!Bye")
-    def retw_TO(self, event_sender: ChatEventSender):
-        self.vk.send_message('Hello from bot')
+    def retw_to(self, event_sender: ChatEventSender):
+        self.vk.send_message_chat(event_sender.chat_id, 'Hello from bot!')
 
 
