@@ -23,13 +23,14 @@ class LongPollHandler:
     async def callback_listener(self):
         pass
 
-    async def start_handle(self):
+    def start_handle(self):
         for event in self._long_poll.listen():
             if event.type == VkEventType.MESSAGE_NEW:
                 if event.from_chat:
                     # trying find handler for message
                     for handler in self.chat_handlers:
                         msg_handle = handler[1].split('=')[1].replace('\"', '').replace(' ', '').replace('\'', '')
+                        print(msg_handle)
                         if msg_handle == event.text:
                             chat_event = ChatEventSender(event.chat_id,
                                                          int(event.extra_values['from']),
@@ -48,10 +49,6 @@ class LongPollHandler:
 
     @staticmethod
     def _methods_with_decorator(controller_name, decorator_name: str) -> GeneratorExit(str):
-        """
-
-        :type controller_name: PATH
-        """
         # raise Warning("\"_methods_with_decorator\" Method works with errors! do unit tests and rewrite it")
         source_lines = inspect.getsourcelines(controller_name)[0]
         for i, line in enumerate(source_lines):
@@ -64,7 +61,8 @@ class LongPollHandler:
                 decor_name = next_line.split('def')[1].split('(')[0].strip()
                 yield (decor_name, param)
 
-
+    def load_stateless_controllers(self, typename: str) -> list:
+        pass
 
 longpoll = LongPollHandler('7328f96c2d8997c8bbaffc4b53e78cbab374ecf6339f3943af4ef65b9da1db589aa831f04ba36e34da46e')
 longpoll.start_handle()

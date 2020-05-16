@@ -1,5 +1,5 @@
 class ChatEventSender:
-    def __init__(self, chat_id: int, user_sender_id: int, event: dict(),):
+    def __init__(self, chat_id: int, user_sender_id: int, event: dict):
         """
         :param chat_id: int > 0
         :param user_sender_id: vk_id > 0
@@ -17,7 +17,7 @@ class ChatEventSender:
 
 
 class UserEventSender:
-    def __init__(self, user_sender_id: int, event: dict()):
+    def __init__(self, user_sender_id: int, event: dict):
         """
         :param user_sender_id: vk_id > 0
         :param event: dictionary like
