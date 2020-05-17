@@ -3,14 +3,16 @@ import random
 
 from vk_api import vk_api
 
+from Src.Vk.VkApiCore import VkCore
+
 
 class VkAction:
-    def __init__(self, token: str):
-        self._vk_session = vk_api.VkApi(token=token)
+    def __init__(self, vk_api_core: VkCore):
+        self._vk_api_core = vk_api_core
 
     def send_message(self, type_id, id: int, message: str = None, attachment=None, keyboard=None):
         try:
-            return self._vk_session.method('messages.send', {type_id: id, 'message': message,
+            return self._vk_api_core.method('messages.send', {type_id: id, 'message': message,
                                                              'random_id': random.randint(-2147483648, +2147483648),
                                                              'attachment': attachment,
                                                              'keyboard': keyboard})
