@@ -27,6 +27,7 @@ class LongPollHandler:
         for event in self._long_poll.listen():
             if event.type == VkEventType.MESSAGE_NEW:
                 if event.from_chat:
+                    print(event.text)
                     # trying find handler for message
                     for handler in self.chat_handlers:
                         msg_handle = handler[1].split('=')[1].replace('\"', '').replace(' ', '').replace('\'', '')
@@ -66,7 +67,7 @@ class LongPollHandler:
     def load_stateless_controllers(self, typename: str) -> list:
         pass
 
-longpoll = LongPollHandler('7328f96c2d8997c8bbaffc4b53e78cbab374ecf6339f3943af4ef65b9da1db589aa831f04ba36e34da46e')
+longpoll = LongPollHandler('cdefe64cad4dfb777159fed5802a6a85ddc7a29eaa4e7f6e876096a07ce53887baa982487b8883b964f8d')
 longpoll.start_handle()
 
 
