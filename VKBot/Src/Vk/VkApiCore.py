@@ -18,7 +18,7 @@ class VkCore:
 
     @staticmethod
     def _method(method_name: str, args: dict) -> str:
-        args = '&'.join('{0}={1}'.format(item, args[item]) for item in args)
+        args = '&'.join('{0}={1}'.format(item, args[item]) for item in args if args[item] is not None)
         _res = requests.get('https://api.vk.com/method/' + method_name + "?" + args)
         if _res.ok:
             return _res.text

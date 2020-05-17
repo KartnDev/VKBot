@@ -26,23 +26,17 @@ class LongPollHandler:
             if 'type' in event and 'object' in event:
                 if event['type'] == 'message_new':
                     msg = event['object']
-                    if 'from_id' in msg and 'text' in msg:
-                        if msg['from_id'] > int(2E9):   # from_chat
+                    if 'from_id' in msg and 'text' in msg and 'peer_id' in msg and 'attachments' in msg:
+                        if msg['peer_id'] > int(2E9):   # from_chat
                             # trying find handler for message
-                            for handler in self.chat_handlers:
-                                msg_handle = handler[1].split('=')[1].replace('\"', '').replace(' ', '').replace('\'', '')
-                                if msg_handle == event.text:
-                                    chat_event = ChatEventSender(event.chat_id,
-                                                                 int(event.extra_values['from']),
-                                                                 {"message": event.text,
-                                                                  "attachment": event.attachments})
-                                    getattr(self.chat_controller, handler[0])(chat_event)   # Call method by name
-                        if event.from_user:
-                            pass    # ChatController Startup
-                        if event.from_group:
-                            pass
-                        if event.from_me:
-                            pass
+                            for _handler in self.chat_handlers:
+                                msg_handle = _handler[1].split('=')[1].replace('\"', '').replace(' ', '').replace('\'', '')
+                                if msg_handle == msg['text']:
+                                    chat_event = ChatEventSender(msg['peer_id'] - int(2E9),
+                                                                 int(msg['from_id']),
+                                                                 {"message": msg['text'],
+                                                                  "attachment": msg['attachments']})
+                                    getattr(self.chat_controller, _handler[0])(chat_event)   # Call method by name
 
     def _find_def_with(self, msg: str, decorator: str, controller_name: str):
         pass
@@ -67,9 +61,5 @@ class LongPollHandler:
     def load_stateless_controllers(self, typename: str) -> list:
         pass
 
-
-core = VkCore('', '64cadDSJ5FIO6POdu7iy6fgh9va789sh2wdu12ihf79j5nu324h8f1op28dsJNIu2fc7a29eaa4e7f6e8764f8d')
-handler = LongPollHandler(core)
-handler.start_handle()
 
 
