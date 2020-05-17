@@ -1,5 +1,8 @@
 import json
 import logging
+
+import requests as requests
+
 from Src.Vk.VkApiCore import VkCore
 
 
@@ -10,7 +13,7 @@ class LongPollListener:
     def _get_long_poll_server(self):
         return self.core.method('groups.getLongPollServer', {'group_id': '182157757'})
 
-    def _get_long_poll_data(self) :
+    def _get_long_poll_data(self):
         _r_data = self._get_long_poll_server()
         key = None
         server = None
@@ -32,13 +35,29 @@ class LongPollListener:
         else:
             logging.critical("Bad response for vk api")
             raise IOError('Bad response for vk api')
-        return key, server, ts
+        return key, ts, server
 
-    def _get_long_poll_server_url(self, ts, key, server: str):
-        return server.replace('\\', '')
-
+    @staticmethod
+    def _get_long_poll_server_url(ts, key, server: str, wait=25) -> str:
+        url = server.replace('\\', '')
+        url += '?act=a_check&key={0}&ts={1}&wait={2}'.format(key, ts, wait)
+        return url
 
     def listen(self):
-        key, ts ,server = self._get_long_poll_data()
+        key, ts, server = self._get_long_poll_data()
+        correct_url = self._get_long_poll_server_url(ts, key, server)
+        while True:
+            _w_res = requests.get(correct_url).json()
+            print(_w_res)
+            if 'ts' in _w_res:
+                ts = _w_res['ts']
+            if 'update' in _w_res:
+                _update_list = _w_res['update']
+                for update in _update_list:
+                    yield update
+            correct_url = self._get_long_poll_server_url(ts, key, server)
 
-        _pattern = {$server}?act=a_check&key={$key}&ts={$ts}&wait=25
+vk = VkCore('', 'cdefe64cad4dfb777159fed5802a6a85ddc7a29eaa4e7f6e876096a07ce53887baa982487b8883b964f8d')
+long_poll = LongPollListener(vk)
+for item in long_poll.listen():
+    print(item)

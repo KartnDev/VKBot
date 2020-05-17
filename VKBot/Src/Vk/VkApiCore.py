@@ -20,7 +20,7 @@ class VkCore:
     def _method(method_name: str, args: dict) -> str:
         args = '&'.join('{0}={1}'.format(item, args[item]) for item in args)
         _res = requests.get('https://api.vk.com/method/' + method_name + "?" + args)
-        if _res.status_code == 'ok':
+        if _res.ok:
             return _res.text
 
     def method(self, method_name: str, args: dict) -> str:
@@ -30,9 +30,3 @@ class VkCore:
 
 
 
-
-
-
-
-vk = VkCore('', 'cdefe64cad4dfb777159fed5802a6a85ddc7a29eaa4e7f6e876096a07ce53887baa982487b8883b964f8d')
-print(vk.get_long_poll_server())
