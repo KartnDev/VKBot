@@ -48,16 +48,24 @@ class LongPollListener:
         correct_url = self._get_long_poll_server_url(ts, key, server)
         while True:
             _w_res = requests.get(correct_url).json()
-            print(_w_res)
+
             if 'ts' in _w_res:
                 ts = _w_res['ts']
-            if 'update' in _w_res:
-                _update_list = _w_res['update']
+            if 'updates' in _w_res:
+                _update_list = _w_res['updates']
                 for update in _update_list:
                     yield update
             correct_url = self._get_long_poll_server_url(ts, key, server)
 
 vk = VkCore('', 'cdefe64cad4dfb777159fed5802a6a85ddc7a29eaa4e7f6e876096a07ce53887baa982487b8883b964f8d')
 long_poll = LongPollListener(vk)
-for item in long_poll.listen():
-    print(item)
+for event in long_poll.listen():
+    if 'type' in event and 'object' in event:
+        if event['type'] == 'message_new':
+            print('===============================================================================')
+            print('Новое сообщение:')
+            msg = event['object']
+            if 'from_id' in msg and 'text' in msg:
+                print('текст сообщения: ', msg['text'])
+                print('user id: ', msg['from_id'])
+
