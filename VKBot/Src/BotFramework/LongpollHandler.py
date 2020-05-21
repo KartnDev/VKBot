@@ -42,7 +42,7 @@ class LongPollHandler:
                                 if msg_handle == msg['text']:
                                     current_vk_u = msg['from_id']
                                     # for AUTH ONLY COMMANDS
-                                    if _handler in self.chat_auth_handlers:
+                                    if _handler[0] in list(item[0] for item in self.chat_auth_handlers):
                                         if self._user_wrr.contains(current_vk_u):
                                             chat_event = ChatEventSender(msg['peer_id'] - int(2E9),
                                                                      int(msg['from_id']),
@@ -56,7 +56,7 @@ class LongPollHandler:
                                                                    пользователей""")
                                             break  # Here goes next loop
                                     # for Level - required COMMANDS
-                                    if handler in self.chat_required_level_handlers:
+                                    if _handler[0] in list(item[0] for item in self.chat_required_level_handlers):
                                         curr_u_lvl = self._user_wrr.select_one(current_vk_u)['access_level']
                                         lvl_handle = int(_handler[1].split('=')[1].replace('\"', '').replace(' ', '')\
                                                                                             .replace('\'', ''))
@@ -98,7 +98,8 @@ class LongPollHandler:
                 param = line.split('(')[1].split(')')[0]
                 next_line = source_lines[i + 1]
                 while '@' in next_line:
-                    next_line = source_lines[i+1]
+                    i += 1
+                    next_line = source_lines[i + 1]
                 decor_name = next_line.split('def')[1].split('(')[0].strip()
                 item = (decor_name, param)
                 result.append(item)

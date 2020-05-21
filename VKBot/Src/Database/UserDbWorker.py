@@ -46,3 +46,6 @@ class UserDbWorker:
         else:
             logging.warning('taken zero params and cannot be any update..')
             return False
+
+    def contains(self, vk_id: int) -> bool:
+        return len(self.db.select_where('users', {'vk_id': vk_id})) != 0
