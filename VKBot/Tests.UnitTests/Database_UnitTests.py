@@ -174,6 +174,13 @@ class UserDbWorkerTest(unittest.TestCase):
 
         self.assertEqual(_new_row[3], 'дима')
 
+    def test_contains(self):
+        users_worker = UserDbWorker()
+        #users_worker.insert(10, 98712364, 'html', 7777)
+        self.assertTrue(users_worker.contains(98712364))
+        self.assertFalse(users_worker.contains(213))
+
+
 
 class CommandDbWorkerTest(unittest.TestCase):
     def test_select_all(self):
