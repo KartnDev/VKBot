@@ -120,6 +120,3 @@ class LongPollHandler:
         pass
 
 
-core = VkCore('', 'cdefe64cad4dfb777159fed5802a6a85ddc7a29eaa4e7f6e876096a07ce53887baa982487b8883b964f8d')
-handler = LongPollHandler(core)
-handler.start_handle()
