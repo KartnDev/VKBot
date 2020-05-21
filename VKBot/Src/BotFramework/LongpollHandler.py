@@ -34,33 +34,44 @@ class LongPollHandler:
                 if event['type'] == 'message_new':
                     msg = event['object']
                     if 'from_id' in msg and 'text' in msg and 'peer_id' in msg and 'attachments' in msg:
-                        if msg['peer_id'] > int(2E9):   # from_chat
+                        if msg['peer_id'] > int(2E9):  # from_chat
                             # trying find handler for message
                             for _handler in self.chat_handlers:
-                                msg_handle = _handler[1].split('=')[1].replace('\"', '').replace(' ', '')\
-                                                                                        .replace('\'', '')
+                                msg_handle = _handler[1].split('=')[1].replace('\"', '').replace(' ', '') \
+                                    .replace('\'', '')
                                 if msg_handle == msg['text']:
                                     current_vk_u = msg['from_id']
                                     # for AUTH ONLY COMMANDS
                                     if _handler[0] in list(item[0] for item in self.chat_auth_handlers):
                                         if self._user_wrr.contains(current_vk_u):
                                             chat_event = ChatEventSender(msg['peer_id'] - int(2E9),
-                                                                     int(msg['from_id']),
-                                                                     {"message": msg['text'],
-                                                                      "attachment": msg['attachments']})
-                                            getattr(self.chat_controller, _handler[0])(chat_event)   # Call method by name
+                                                                         int(msg['from_id']),
+                                                                         {"message": msg['text'],
+                                                                          "attachment": msg['attachments']})
+                                            getattr(self.chat_controller, _handler[0])(
+                                                chat_event)  # Call method by name
                                             break  # Here goes next loop
                                         else:
                                             self._send_call_error_chat(msg['peer_id'] - int(2E9),
-                                                                   """комманда доступна только для зарегестрированных 
+                                                                       """комманда доступна только для 
+                                                                       зарегестрированных 
                                                                    пользователей""")
                                             break  # Here goes next loop
                                     # for Level - required COMMANDS
                                     if _handler[0] in list(item[0] for item in self.chat_required_level_handlers):
-                                        curr_u_lvl = self._user_wrr.select_one(current_vk_u)['access_level']
-                                        lvl_handle = int(_handler[1].split('=')[1].replace('\"', '').replace(' ', '')\
-                                                                                            .replace('\'', ''))
-                                        if current_vk_u >= lvl_handle:
+                                        curr_u_lvl = self._user_wrr.first_or_default(current_vk_u)
+                                        if curr_u_lvl is not None:
+                                            curr_u_lvl = curr_u_lvl[1]
+                                        else:
+                                            self._send_call_error_chat(msg['peer_id'] - int(2E9),
+                                                                       """комманда доступна только для 
+                                                                       зарегестрированных 
+                                                                       пользователей c повышенным уровнем доступа""")
+                                            break
+                                        lvl_handle = [v for i, v in enumerate(self.chat_required_level_handlers)
+                                                      if v[0] == _handler[0]][0]
+                                        needed_lvl = int(lvl_handle[1].split('=')[1])
+                                        if curr_u_lvl >= needed_lvl:
                                             chat_event = ChatEventSender(msg['peer_id'] - int(2E9),
                                                                          int(msg['from_id']),
                                                                          {"message": msg['text'],
@@ -70,7 +81,7 @@ class LongPollHandler:
                                         else:
                                             self._send_call_error_chat(msg['peer_id'] - int(2E9),
                                                                        """Нет доступа к команде: required lvl = {0},
-                                                                            {1} taken, {0} > {1}""".format(lvl_handle,
+                                                                            {1} taken, {0} > {1}""".format(needed_lvl,
                                                                                                            curr_u_lvl))
                                             break  # Here goes next loop
                                     # NORMAL CASUAL COMMANDS
@@ -112,5 +123,3 @@ class LongPollHandler:
 core = VkCore('', 'cdefe64cad4dfb777159fed5802a6a85ddc7a29eaa4e7f6e876096a07ce53887baa982487b8883b964f8d')
 handler = LongPollHandler(core)
 handler.start_handle()
-
-

@@ -22,6 +22,11 @@ class UserDbWorker:
 
         return items
 
+    def first_or_default(self, vk_id: int):
+        query = self.db.select_where(self.table_name, {'vk_id': vk_id})
+        return query[0] if len(query) > 0 else None
+
+
     def insert(self, access_level: int, vk_id: int, association: str, level_exp=0) -> bool:
         return self.db.insert_into(self.table_name, {'access_level': access_level,
                                                      'vk_id': vk_id,
@@ -48,4 +53,4 @@ class UserDbWorker:
             return False
 
     def contains(self, vk_id: int) -> bool:
-        return len(self.db.select_where('users', {'vk_id': vk_id})) != 0
+        return len(self.db.select_where(self.table_name, {'vk_id': vk_id})) != 0
