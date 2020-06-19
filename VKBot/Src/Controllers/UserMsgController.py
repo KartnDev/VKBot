@@ -1,6 +1,6 @@
-from Src.BotFramework import VkAction
-from Src.BotFramework.EventSender import ChatEventSender
-from Src.BotFramework.SDK import HandleMessage
+from Src.BotFramework.Vkontakte import VkAction
+from Src.BotFramework.Vkontakte.EventSender import ChatEventSender
+from Src.BotFramework.Vkontakte.SDK import HandleMessage
 
 
 class ChatMsgController:

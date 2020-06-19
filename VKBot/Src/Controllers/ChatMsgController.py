@@ -1,8 +1,7 @@
-from Src.BotFramework.EventSender import ChatEventSender
-from Src.BotFramework.VkAction import VkAction
-from Src.BotFramework.SDK import *
+from Src.BotFramework.Vkontakte.EventSender import ChatEventSender
+from Src.BotFramework.Vkontakte.VkAction import VkAction
+from Src.BotFramework.Vkontakte.SDK import *
 from Src.Database.Connector import DbConnection, DbConnVersion
-from Src.Database.UserDbWorker import UserDbWorker
 
 
 class ChatMsgController:
@@ -21,7 +20,7 @@ class ChatMsgController:
     @RequiredLvl(lvl=10)
     @HandleMessage(msg="!Hello")
     def handle_name(self, event_sender: ChatEventSender):
-        print(self.vk.send_message_chat(event_sender.chat_id, "ИДИ НАХУЙ!"))
+        #print(self.vk.send_message_chat(event_sender.chat_id, "ИДИ НАХУЙ!"))
 
         print("Сообщение пришло из чата id" + str(event_sender.chat_id))
         print("Сообщение пришло от юзера id" + str(event_sender.user_id))

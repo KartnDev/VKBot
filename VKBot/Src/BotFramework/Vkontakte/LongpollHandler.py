@@ -1,10 +1,7 @@
 import inspect
 
-from vk_api import vk_api
-from vk_api.longpoll import VkLongPoll, VkEventType
-
-from Src.BotFramework.EventSender import ChatEventSender
-from Src.BotFramework.VkAction import VkAction
+from Src.BotFramework.Vkontakte.EventSender import ChatEventSender
+from Src.BotFramework.Vkontakte.VkAction import VkAction
 from Src.Controllers.ChatMsgController import ChatMsgController
 from Src.Vk.LongPollListener.LongpollListener import LongPollListener
 from Src.Database.UserDbWorker import UserDbWorker
@@ -36,6 +33,9 @@ class LongPollHandler:
                     if 'from_id' in msg and 'text' in msg and 'peer_id' in msg and 'attachments' in msg:
                         if msg['peer_id'] > int(2E9):  # from_chat
                             # trying find handler for message
+                            #if msg['peer_id'] ==
+
+
                             for _handler in self.chat_handlers:
                                 msg_handle = _handler[1].split('=')[1].replace('\"', '').replace(' ', '') \
                                     .replace('\'', '')
@@ -119,4 +119,7 @@ class LongPollHandler:
     def load_stateless_controllers(self, typename: str) -> list:
         pass
 
-
+# TODO DELETE IT BEFORE COMMIT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+core = VkCore('', 'cdefe64cad4dfb777159fed5802a6a85ddc7a29eaa4e7f6e876096a07ce53887baa982487b8883b964f8d')
+handler = LongPollHandler(core)
+handler.start_handle()
