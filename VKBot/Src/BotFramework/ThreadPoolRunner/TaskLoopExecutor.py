@@ -9,7 +9,8 @@ class EventEngine:
         self._vk_core = vk_api_core
         self._main_thread_vk = LongPollHandler(vk_api_core)
 
-    def run_tasks(self):
-        co = asyncio.tasks.create_task(self._main_thread_vk.start_handle())
-        co.result()
+    async def run_tasks(self):
+        await self._main_thread_vk.start_handle()
+
+
 

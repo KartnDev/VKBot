@@ -1,9 +1,9 @@
 from Src.BotFramework.Vkontakte import VkAction
-from Src.BotFramework.Vkontakte.EventSender import ChatEventSender
+from Src.BotFramework.Vkontakte.EventSender import UserEventSender
 from Src.BotFramework.Vkontakte.SDK import HandleMessage
 
 
-class ChatMsgController:
+class UserMsgController:
 
     def __getattr__(self, item):
         return getattr(item)
@@ -11,23 +11,8 @@ class ChatMsgController:
     def __init__(self, vk_action: VkAction):
         self.vk = vk_action
 
-    @HandleMessage(msg="!Крыса")
-    def handle_krisa(self, event_sender: ChatEventSender):
-        self.vk.send_message_chat(event_sender.chat_id, "САМ ТЫ КРЫСА @id" + str(event_sender.user_id))
+    @HandleMessage(msg="!привет")
+    def handle_hello(self, event_sender: UserEventSender):
+        print("Hello form: " + str(event_sender.user_id))
+        self.vk.send_message()
 
-    @HandleMessage(msg="!Hello")
-    def handle_name(self, event_sender: ChatEventSender):
-        self.vk.send_message_chat(event_sender.chat_id, "ИДИ НАХУЙ!")
-
-        print("Сообщение пришло из чата id"+ str(event_sender.chat_id))
-        print("Сообщение пришло от юзера id"+ str(event_sender.user_id))
-        print("Текст сообщенияЖ :"+ event_sender.event['message'])
-        print(event_sender.event['attachment'])
-
-    @HandleMessage(msg="!Bye")
-    def ret(self, event_sender: ChatEventSender):
-        self.vk.send_message('Hello from bot')
-
-    @HandleMessage
-    def on_map_request(self, map_id: int):
-        pass

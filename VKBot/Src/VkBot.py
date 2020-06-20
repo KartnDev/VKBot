@@ -24,7 +24,6 @@ class VkBan:
                        {id_type: id, 'message': message, 'random_id': random.randint(-2147483648, +2147483648),
                         "attachment": attachment, 'keyboard': keyboard})
 
-    #TODO переписать это легаси говно без try
     async def ban(self, chat_id, user_id, time_delay='permanent', reason=None):
             if time_delay == 'permanent':
                 self.send_message('chat_id', chat_id,
@@ -39,6 +38,7 @@ class VkBan:
                 self.vk.method('messages.removeChatUser', {'chat_id': chat_id, 'user_id': user_id})
                 time.sleep(float(time_delay))
                 self.invite(chat_id, user_id)
+
     def invite(self, chat_id, user_id):
         """Только для беседы. Требует только id человека для добавления в беседу"""
         try:
@@ -52,7 +52,6 @@ class VkBot:
         self.vk = vk_session
         self.session = session_api
 
-    #TODO переписать это легаси говно без try
     def send_wo_mention(self, id_type, id, message=None, attachment=None, keyboard=None):
         self.vk.method('messages.send',
                        {id_type: id, 'message': message, 'random_id': random.randint(-2147483648, +2147483648),
@@ -108,7 +107,7 @@ class VkBot:
             self.get_random_audio(owner_id)
 
     def get_all(self, chat_id):
-        return (self.vk.method('messages.getChat', {'chat_id': chat_id})['users'])
+        return self.vk.method('messages.getChat', {'chat_id': chat_id})['users']
 
     def get_random_person(self, chat_id):
         return random.choice(
