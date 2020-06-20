@@ -6,9 +6,6 @@ from Src.Database.Connector import DbConnection, DbConnVersion
 
 class ChatMsgController:
 
-    def __getattr__(self, item):
-        return getattr(item)
-
     def __init__(self, vk_action: VkAction):
         self.vk = vk_action
 

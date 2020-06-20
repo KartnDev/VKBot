@@ -12,7 +12,7 @@ class UserMsgController:
         self.vk = vk_action
 
     @HandleMessage(msg="!привет")
-    def handle_hello(self, event_sender: UserEventSender):
+    async def handle_hello(self, event_sender: UserEventSender):
         print("Hello form: " + str(event_sender.user_id))
-        self.vk.send_message()
+        self.vk.send_message(type_id="user_id", id=event_sender.user_id, message="Здорово очередняра")
 

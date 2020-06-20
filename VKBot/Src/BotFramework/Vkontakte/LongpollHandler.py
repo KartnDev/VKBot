@@ -41,12 +41,14 @@ class LongPollHandler:
         for event in self._long_poll.listen():
             if 'type' in event and 'object' in event:
                 if event['type'] == 'message_new':
-                    msg = event['object']
-                    if 'from_id' in msg and 'text' in msg and 'peer_id' in msg and 'attachments' in msg:
-                        if msg['peer_id'] > int(2E9):  # from_chat
-                            await self.__find_chat_handler_invoke(msg)
-                        elif msg['peer_id'] < int(2E9):
-                            await self.__find_user_msg_handler_invoke(msg)
+                    obj = event['object']
+                    if 'message' in obj:
+                        msg = obj['message']
+                        if 'from_id' in msg and 'text' in msg and 'peer_id' in msg and 'attachments' in msg:
+                            if msg['peer_id'] > int(2E9):  # from_chat
+                                await self.__find_chat_handler_invoke(msg)
+                            elif msg['peer_id'] < int(2E9):
+                                await self.__find_user_msg_handler_invoke(msg)
 
     async def __find_chat_handler_invoke(self, msg: dict):
         for _handler in self._chat_handlers:
@@ -138,7 +140,7 @@ class LongPollHandler:
                     if curr_u_lvl >= needed_lvl:
                         user_msg_event = UserEventSender(msg['from_id'], {"message": msg['text'],
                                                                           "attachment": msg['attachments']})
-                        await getattr(self._chat_controller, _handler[0])(user_msg_event)
+                        await getattr(self._user_msg_controller, _handler[0])(user_msg_event)
                     else:
                         self._send_call_error_chat(msg['peer_id'] - int(2E9),
                                                    """Нет доступа к команде: required lvl = {0},
@@ -149,7 +151,7 @@ class LongPollHandler:
                 else:
                     user_msg_event = UserEventSender(msg['from_id'], {"message": msg['text'],
                                                                       "attachment": msg['attachments']})
-                    await getattr(self._chat_controller, _handler[0])(user_msg_event)
+                    await getattr(self._user_msg_controller, _handler[0])(user_msg_event)
 
 
 
