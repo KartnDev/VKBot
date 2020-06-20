@@ -31,132 +31,8 @@ class LongPollHandler:
 
         self._user_wrr = UserDbWorker()
 
-    def _send_call_error_chat(self, chat_id: int, msg: str):
-        return self._vk_action.send_message_chat(chat_id=chat_id, message="Call error: " + msg)
-
-    def _send_call_error_to_user(self, user_id: int, msg: str):
-        return self._vk_action.send_message(type_id="user_id", id=user_id, message=msg)
-
-    async def start_handle(self):
-        for event in self._long_poll.listen():
-            if 'type' in event and 'object' in event:
-                if event['type'] == 'message_new':
-                    obj = event['object']
-                    if 'message' in obj:
-                        msg = obj['message']
-                        if 'from_id' in msg and 'text' in msg and 'peer_id' in msg and 'attachments' in msg:
-                            if msg['peer_id'] > int(2E9):  # from_chat
-                                await self.__find_chat_handler_invoke(msg)
-                            elif msg['peer_id'] < int(2E9):
-                                await self.__find_user_msg_handler_invoke(msg)
-
-    async def __find_chat_handler_invoke(self, msg: dict):
-        for _handler in self._chat_handlers:
-            msg_handle = _handler[1].split('=')[1].replace('\"', '').replace(' ', '').replace('\'', '')
-            if msg_handle == msg['text']:
-                current_vk_u = msg['from_id']
-                # for AUTH ONLY COMMANDS
-                if _handler[0] in list(item[0] for item in self._chat_auth_handlers):
-                    if self._user_wrr.contains(current_vk_u):
-                        chat_event = ChatEventSender(msg['peer_id'] - int(2E9),
-                                                     int(msg['from_id']),
-                                                     {"message": msg['text'],
-                                                      "attachment": msg['attachments']})
-                        await getattr(self._chat_controller, _handler[0])(chat_event)
-                        break  # Here goes next loop
-                    else:
-                        self._send_call_error_chat(msg['peer_id'] - int(2E9),
-                                                   """комманда доступна только для 
-                                                   зарегестрированных 
-                                               пользователей""")
-                        break  # Here goes next loop
-                # for Level - required COMMANDS
-                if _handler[0] in list(item[0] for item in self._chat_required_level_handlers):
-                    curr_u_lvl = self._user_wrr.first_or_default(current_vk_u)
-                    if curr_u_lvl is not None:
-                        curr_u_lvl = curr_u_lvl[1]
-                    else:
-                        self._send_call_error_chat(msg['peer_id'] - int(2E9),
-                                                   """комманда доступна только для 
-                                                   зарегестрированных 
-                                                   пользователей c повышенным уровнем доступа""")
-                        break
-                    lvl_handle = [handler_item for i, handler_item in enumerate(self._chat_required_level_handlers)
-                                  if handler_item[0] == _handler[0]][0]
-                    needed_lvl = int(lvl_handle[1].split('=')[1])
-                    if curr_u_lvl >= needed_lvl:
-                        chat_event = ChatEventSender(msg['peer_id'] - int(2E9),
-                                                     int(msg['from_id']),
-                                                     {"message": msg['text'],
-                                                      "attachment": msg['attachments']})
-                        await getattr(self._chat_controller, _handler[0])(chat_event)
-                    else:
-                        self._send_call_error_chat(msg['peer_id'] - int(2E9),
-                                                   """Нет доступа к команде: required lvl = {0},
-                                                        {1} taken, {0} > {1}""".format(needed_lvl,
-                                                                                       curr_u_lvl))
-                        break  # Here goes next loop
-                # NORMAL CASUAL COMMANDS
-                else:
-                    chat_event = ChatEventSender(msg['peer_id'] - int(2E9),
-                                                 int(msg['from_id']),
-                                                 {"message": msg['text'],
-                                                  "attachment": msg['attachments']})
-                    await getattr(self._chat_controller, _handler[0])(chat_event)
-
-    async def __find_user_msg_handler_invoke(self, msg: dict):
-        for _handler in self._user_msg_handlers:
-            msg_handle = _handler[1].split('=')[1].replace('\"', '').replace(' ', '').replace('\'', '')
-
-            if msg_handle == msg['text']:
-                current_vk_u = msg['from_id']
-                # for AUTH ONLY COMMANDS
-                if _handler[0] in list(item[0] for item in self._user_auth_handlers):
-                    if self._user_wrr.contains(current_vk_u):
-                        user_msg_event = UserEventSender(msg['from_id'], {"message": msg['text'],
-                                                                          "attachment": msg['attachments']})
-                        await getattr(self._user_msg_controller, _handler[0])(user_msg_event)
-                        break  # Here goes next loop
-                    else:
-                        self._send_call_error_chat(msg['peer_id'] - int(2E9),
-                                                   """комманда доступна только для 
-                                                      зарегестрированных 
-                                                      пользователей""")
-                        break  # Here goes next loop
-                # for Level - required COMMANDS
-                if _handler[0] in list(item[0] for item in self._user_required_level_handlers):
-                    curr_u_lvl = self._user_wrr.first_or_default(current_vk_u)
-                    if curr_u_lvl is not None:
-                        curr_u_lvl = curr_u_lvl[1]
-                    else:
-                        self._send_call_error_chat(msg['peer_id'] - int(2E9),
-                                                   """комманда доступна только для 
-                                                      зарегестрированных 
-                                                      пользователей c повышенным уровнем доступа""")
-                        break
-                    lvl_handle = [v for i, v in enumerate(self._user_required_level_handlers)
-                                  if v[0] == _handler[0]][0]
-                    needed_lvl = int(lvl_handle[1].split('=')[1])
-                    if curr_u_lvl >= needed_lvl:
-                        user_msg_event = UserEventSender(msg['from_id'], {"message": msg['text'],
-                                                                          "attachment": msg['attachments']})
-                        await getattr(self._user_msg_controller, _handler[0])(user_msg_event)
-                    else:
-                        self._send_call_error_chat(msg['peer_id'] - int(2E9),
-                                                   """Нет доступа к команде: required lvl = {0},
-                                                        {1} taken, {0} > {1}""".format(needed_lvl,
-                                                                                       curr_u_lvl))
-                        break  # Here goes next loop
-                # NORMAL CASUAL COMMANDS
-                else:
-                    user_msg_event = UserEventSender(msg['from_id'], {"message": msg['text'],
-                                                                      "attachment": msg['attachments']})
-                    await getattr(self._user_msg_controller, _handler[0])(user_msg_event)
-
-
-
     @staticmethod
-    def _methods_with_decorator(controller_name, decorator_name: str) -> list:
+    def _methods_with_decorator(controller_name, decorator_name: str) -> [(str, str)]:
         # raise Warning("\"_methods_with_decorator\" Method works with errors! do unit tests and rewrite it")
         source_lines = inspect.getsourcelines(controller_name)[0]
         result = []
@@ -172,3 +48,175 @@ class LongPollHandler:
                 item = (decor_name, param)
                 result.append(item)
         return result
+
+    def _send_call_error_chat(self, chat_id: int, msg: str):
+        return self._vk_action.send_message_chat(chat_id=chat_id, message="Call error: " + msg)
+
+    def _send_call_error_to_user(self, user_id: int, msg: str):
+        return self._vk_action.send_message(type_id="user_id", id=user_id, message=msg)
+
+    def is_user_registered(self, user_id: int) -> bool:
+        return self._user_wrr.contains(user_id)
+
+    async def start_handle(self):
+        for event in self._long_poll.listen():
+            if 'type' in event and 'object' in event:
+                if event['type'] == 'message_new':
+                    obj = event['object']
+                    if 'message' in obj:
+                        msg = obj['message']
+                        if 'from_id' in msg and 'text' in msg and 'peer_id' in msg and 'attachments' in msg:
+                            if msg['peer_id'] > int(2E9):  # from_chat
+                                await self.__find_chat_handler_invoke(msg)
+                            elif msg['peer_id'] < int(2E9):  # from user
+                                await self.__find_user_msg_handler_invoke(msg)
+
+    # region chat_handlers
+
+    # TODO test it
+    async def __find_chat_handler_invoke(self, msg: dict):
+        for _handler in self._chat_handlers:
+            if 'msg' in _handler[1]:  # if we wont to explicit use all message
+                msg_handle = _handler[1].split('=')[1].replace('\"', '').replace(' ', '').replace('\'', '')
+
+                if msg_handle == msg['text']:
+                    await self.__check_for_user_annotation_and_invoke(_handler, msg['from_id'], msg)
+            elif 'first_word' in _handler[1]:  # explicit first-word handler
+                word_handle = _handler[1].split("first_word=")[1].replace(' ', '').split(",")[0]
+                words_split = msg['text'].split[" "]
+                if words_split[0] == word_handle:
+                    if 'words_length' in _handler[1]:
+                        word_require_len = _handler[1].split("words_length=")[1].replace(' ', '').split(",")[0]
+                        if word_require_len == len(words_split):
+                            await self.__check_for_chat_annotation_and_invoke(_handler, msg['from_id'], msg)
+                    else:
+                        await self.__check_for_chat_annotation_and_invoke(_handler, msg['from_id'], msg)
+
+            elif 'first_word' in _handler[1] and _handler in self._user_msg_handlers:
+                raise Exception("Cannot explicit cast part of message and message in one expression!")
+
+    async def __check_for_chat_annotation_and_invoke(self, handler_handlable_msg: (str, str), user_id: int, message):
+        if handler_handlable_msg[0] in list(item[0] for item in self._chat_auth_handlers):
+            await self.__invoke_auth_handler(user_id, message, handler_handlable_msg)
+
+        elif handler_handlable_msg[0] in list(item[0] for item in self._chat_required_level_handlers):
+            await self.__invoke_required_lvl_handler(user_id, message, handler_handlable_msg)
+
+        else:
+            await self.__invoke_base_handler(user_id, message, handler_handlable_msg)
+
+    async def __invoke_auth_handler(self, user_id: int, message: dict, handler_handlable_msg: (str, str)):
+        if self.is_user_registered(user_id):
+            chat_event = ChatEventSender(message['peer_id'] - int(2E9),
+                                         int(message['from_id']),
+                                         {"message": message['text'],
+                                          "attachment": message['attachments']})
+            await getattr(self._chat_controller, handler_handlable_msg[0])(chat_event)
+        else:
+            self._send_call_error_chat(message['peer_id'] - int(2E9),
+                                       """комманда доступна только для 
+                                          зарегестрированных 
+                                          пользователей""")
+
+    async def __invoke_required_lvl_handler(self, user_id: int, message: dict, handler_handlable_msg: (str, str)):
+        curr_u_lvl = self._user_wrr.first_or_default(user_id)
+        if curr_u_lvl is not None:
+            curr_u_lvl = curr_u_lvl[1]
+        else:
+            self._send_call_error_chat(message['peer_id'] - int(2E9),
+                                       """комманда доступна только для 
+                                       зарегестрированных 
+                                       пользователей c повышенным уровнем доступа""")
+        lvl_handle = [handler_item for i, handler_item in enumerate(self._chat_required_level_handlers)
+                      if handler_item[0] == handler_handlable_msg[0]][0]
+        needed_lvl = int(lvl_handle[1].split('=')[1])
+        if curr_u_lvl >= needed_lvl:
+            chat_event = ChatEventSender(message['peer_id'] - int(2E9),
+                                         int(message['from_id']),
+                                         {"message": message['text'],
+                                          "attachment": message['attachments']})
+            await getattr(self._chat_controller, handler_handlable_msg[0])(chat_event)
+        else:
+            self._send_call_error_chat(message['peer_id'] - int(2E9),
+                                       """Нет доступа к команде: required lvl = {0},
+                                            {1} taken, {0} > {1}""".format(needed_lvl,
+                                                                           curr_u_lvl))
+
+    async def __invoke_base_handler(self, user_id: int, message: dict, handler_handlable_msg: (str, str)):
+        chat_event = ChatEventSender(message['peer_id'] - int(2E9),
+                                     int(message['from_id']),
+                                     {"message": message['text'],
+                                      "attachment": message['attachments']})
+        await getattr(self._chat_controller, handler_handlable_msg[0])(chat_event)
+
+    # region end chat_handlers
+
+    # region for user_messages_handler
+
+    # TODO test it
+    async def __find_user_msg_handler_invoke(self, msg: dict):
+        for _handler in self._user_msg_handlers:
+            if 'msg' in _handler[1]: # if we wont to explicit use all message
+                msg_handle = _handler[1].split('=')[1].replace('\"', '').replace(' ', '').replace('\'', '')
+
+                if msg_handle == msg['text']:
+                    await self.__check_for_user_annotation_and_invoke(_handler, msg['from_id'], msg)
+            elif 'first_word' in _handler[1]:   # explicit first-word handler
+                word_handle = _handler[1].split("first_word=")[1].replace(' ', '').split(",")[0]
+                words_split = msg['text'].split[" "]
+                if words_split[0] == word_handle:
+                    if 'words_length' in _handler[1]:
+                        word_require_len = _handler[1].split("words_length=")[1].replace(' ', '').split(",")[0]
+                        if word_require_len == len(words_split):
+                            await self.__check_for_user_annotation_and_invoke(_handler, msg['from_id'], msg)
+                    else:
+                        await self.__check_for_user_annotation_and_invoke(_handler, msg['from_id'], msg)
+
+            elif 'first_word' in _handler[1] and _handler in self._user_msg_handlers:
+                raise Exception("Cannot explicit cast part of message and message in one expression!")
+
+    async def __check_for_user_annotation_and_invoke(self, handler_handlable_msg: (str, str), user_id: int, message):
+
+        if handler_handlable_msg[0] in list(item[0] for item in self._user_auth_handlers):
+            await self.__invoke_auth_handler_user(user_id, message, handler_handlable_msg)
+
+        elif handler_handlable_msg[0] in list(item[0] for item in self._user_required_level_handlers):
+            await self.__invoke_required_lvl_handler_user(user_id, message, handler_handlable_msg)
+
+        else:
+            await self.__invoke_base_handler_user(user_id, message, handler_handlable_msg)
+
+    async def __invoke_auth_handler_user(self, user_id: int, message: dict, handler_handlable_msg: (str, str)):
+        if self._user_wrr.contains(user_id):
+            user_msg_event = UserEventSender(message['from_id'], {"message": message['text'],
+                                                                  "attachment": message['attachments']})
+            await getattr(self._user_msg_controller, handler_handlable_msg[0])(user_msg_event)
+
+        else:
+            self._send_call_error_to_user(user_id, 'комманда доступна только для зарегестрированных пользователей')
+
+    async def __invoke_required_lvl_handler_user(self, user_id: int, message: dict, handler_handlable_msg: (str, str)):
+        curr_u_lvl = self._user_wrr.first_or_default(user_id)
+        if curr_u_lvl is not None:
+            curr_u_lvl = curr_u_lvl[1]
+        else:
+            self._send_call_error_to_user(user_id, 'комманда доступна только для зарегестрированных ' +
+                                                   'пользователей c повышенным уровнем доступа')
+
+        lvl_handle = [v for i, v in enumerate(self._user_required_level_handlers)
+                      if v[0] == handler_handlable_msg[0]][0]
+        needed_lvl = int(lvl_handle[1].split('=')[1])
+        if curr_u_lvl >= needed_lvl:
+            user_msg_event = UserEventSender(message['from_id'], {"message": message['text'],
+                                                                  "attachment": message['attachments']})
+            await getattr(self._user_msg_controller, handler_handlable_msg[0])(user_msg_event)
+        else:
+            self._send_call_error_to_user(user_id, """Нет доступа к команде: required lvl = {0},
+                                            {1} taken, {0} > {1}""".format(needed_lvl, curr_u_lvl))
+
+    async def __invoke_base_handler_user(self, user_id: int, message: dict, handler_handlable_msg: (str, str)):
+        user_msg_event = UserEventSender(message['from_id'], {"message": message['text'],
+                                                              "attachment": message['attachments']})
+        await getattr(self._user_msg_controller, handler_handlable_msg[0])(user_msg_event)
+
+    # region end user_messages_handler

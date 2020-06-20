@@ -30,8 +30,8 @@ class LongPollListener:
                     logging.critical("Cannot get one of needed params for server in request vk")
                     raise KeyError('Cannot get one of needed params for server in request vk')
             else:
-                logging.critical("Something went wrong.. No response header in str")
-                raise ValueError('Something went wrong.. No response header in str')
+                logging.critical("Something went wrong.. No 'response' key in str dict [Probably no str token]")
+                raise ValueError('Something went wrong.. No \'response\' key in str dict [Probably no str token]')
         else:
             logging.critical("Bad response for vk api")
             raise IOError('Bad response for vk api')
