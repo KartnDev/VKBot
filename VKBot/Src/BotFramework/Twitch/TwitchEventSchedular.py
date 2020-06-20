@@ -1,0 +1,2 @@
+class TwitchHandler:
+    pass

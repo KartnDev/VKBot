@@ -25,7 +25,7 @@ class LongPollHandler:
     def _send_call_error_chat(self, chat_id: int, msg: str):
         return self._vk_action.send_message_chat(chat_id=chat_id, message="Call error: " + msg)
 
-    def start_handle(self):
+    async def start_handle(self):
         for event in self._long_poll.listen():
             if 'type' in event and 'object' in event:
                 if event['type'] == 'message_new':
@@ -33,9 +33,7 @@ class LongPollHandler:
                     if 'from_id' in msg and 'text' in msg and 'peer_id' in msg and 'attachments' in msg:
                         if msg['peer_id'] > int(2E9):  # from_chat
                             # trying find handler for message
-                            #if msg['peer_id'] ==
-
-
+                            # if msg['peer_id'] ==
                             for _handler in self.chat_handlers:
                                 msg_handle = _handler[1].split('=')[1].replace('\"', '').replace(' ', '') \
                                     .replace('\'', '')
@@ -48,8 +46,7 @@ class LongPollHandler:
                                                                          int(msg['from_id']),
                                                                          {"message": msg['text'],
                                                                           "attachment": msg['attachments']})
-                                            getattr(self.chat_controller, _handler[0])(
-                                                chat_event)  # Call method by name
+                                            await getattr(self.chat_controller, _handler[0])(chat_event)
                                             break  # Here goes next loop
                                         else:
                                             self._send_call_error_chat(msg['peer_id'] - int(2E9),
@@ -76,8 +73,7 @@ class LongPollHandler:
                                                                          int(msg['from_id']),
                                                                          {"message": msg['text'],
                                                                           "attachment": msg['attachments']})
-                                            getattr(self.chat_controller, _handler[0])(
-                                                chat_event)  # Call method by name
+                                            await getattr(self.chat_controller, _handler[0])(chat_event)
                                         else:
                                             self._send_call_error_chat(msg['peer_id'] - int(2E9),
                                                                        """Нет доступа к команде: required lvl = {0},
@@ -90,13 +86,10 @@ class LongPollHandler:
                                                                      int(msg['from_id']),
                                                                      {"message": msg['text'],
                                                                       "attachment": msg['attachments']})
-                                        getattr(self.chat_controller, _handler[0])(
-                                            chat_event)  # Call method by name
+                                        await getattr(self.chat_controller, _handler[0])(chat_event)
                         elif msg['peer_id'] < int(2E9):
                             pass
 
-    def _find_def_with(self, msg: str, decorator: str, controller_name: str):
-        pass
 
     @staticmethod
     def _methods_with_decorator(controller_name, decorator_name: str) -> list:
@@ -116,10 +109,4 @@ class LongPollHandler:
                 result.append(item)
         return result
 
-    def load_stateless_controllers(self, typename: str) -> list:
-        pass
 
-# TODO DELETE IT BEFORE COMMIT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-core = VkCore('', 'cdefe64cad4dfb777159fed5802a6a85ddc7a29eaa4e7f6e876096a07ce53887baa982487b8883b964f8d')
-handler = LongPollHandler(core)
-handler.start_handle()
