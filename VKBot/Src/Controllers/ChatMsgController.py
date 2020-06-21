@@ -49,7 +49,7 @@ class ChatMsgController:
     async def handle_partial(self, event_sender: ChatEventSender):
         self.vk.send_message_chat(event_sender.chat_id, "2Е41 ОК")
 
-    @HandleMessage(words_length=3, first_word="!unban")
+    @HandleMessage(words_length=3, first_word="!un")
     @RequiredLvl(lvl=1)
     async def handle_partial(self, event_sender: ChatEventSender):
-        self.vk.send_message_chat(event_sender.chat_id, "2Е41 ОК")
+        self.vk.send_message_chat(event_sender.chat_id, "2Е42 ОК")

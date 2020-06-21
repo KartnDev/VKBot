@@ -82,18 +82,21 @@ class LongPollHandler:
                 if msg_handle == msg['text']:
                     await self.__check_for_user_annotation_and_invoke(_handler, msg['from_id'], msg)
             elif 'first_word' in _handler[1]:  # explicit first-word handler
-                word_handle = _handler[1].split("first_word=")[1].replace(' ', '').split(",")[0]
-                words_split = msg['text'].split[" "]
+                word_handle = _handler[1].split("first_word=")[1].replace(' ', '').split(",")[0] \
+                    .replace('"', '').replace("'", "")
+
+                words_split = msg['text'].split(" ")
                 if words_split[0] == word_handle:
                     if 'words_length' in _handler[1]:
                         word_require_len = _handler[1].split("words_length=")[1].replace(' ', '').split(",")[0]
-                        if word_require_len == len(words_split):
+                        if int(word_require_len) == len(words_split):
                             await self.__check_for_chat_annotation_and_invoke(_handler, msg['from_id'], msg)
                     else:
                         await self.__check_for_chat_annotation_and_invoke(_handler, msg['from_id'], msg)
 
             elif 'first_word' in _handler[1] and _handler in self._user_msg_handlers:
                 raise Exception("Cannot explicit cast part of message and message in one expression!")
+            break
 
     async def __check_for_chat_annotation_and_invoke(self, handler_handlable_msg: (str, str), user_id: int, message):
         if handler_handlable_msg[0] in list(item[0] for item in self._chat_auth_handlers):
@@ -156,18 +159,20 @@ class LongPollHandler:
     # TODO test it
     async def __find_user_msg_handler_invoke(self, msg: dict):
         for _handler in self._user_msg_handlers:
-            if 'msg' in _handler[1]: # if we wont to explicit use all message
+            if 'msg' in _handler[1]:  # if we wont to explicit use all message
                 msg_handle = _handler[1].split('=')[1].replace('\"', '').replace(' ', '').replace('\'', '')
 
                 if msg_handle == msg['text']:
                     await self.__check_for_user_annotation_and_invoke(_handler, msg['from_id'], msg)
-            elif 'first_word' in _handler[1]:   # explicit first-word handler
-                word_handle = _handler[1].split("first_word=")[1].replace(' ', '').split(",")[0]
-                words_split = msg['text'].split[" "]
+            elif 'first_word' in _handler[1]:  # explicit first-word handler
+                word_handle = _handler[1].split("first_word=")[1].replace(' ', '').split(",")[0] \
+                    .replace('"', '').replace("'", "")
+
+                words_split = msg['text'].split(" ")
                 if words_split[0] == word_handle:
                     if 'words_length' in _handler[1]:
                         word_require_len = _handler[1].split("words_length=")[1].replace(' ', '').split(",")[0]
-                        if word_require_len == len(words_split):
+                        if int(word_require_len) == len(words_split):
                             await self.__check_for_user_annotation_and_invoke(_handler, msg['from_id'], msg)
                     else:
                         await self.__check_for_user_annotation_and_invoke(_handler, msg['from_id'], msg)
@@ -201,7 +206,7 @@ class LongPollHandler:
             curr_u_lvl = curr_u_lvl[1]
         else:
             self._send_call_error_to_user(user_id, 'комманда доступна только для зарегестрированных ' +
-                                                   'пользователей c повышенным уровнем доступа')
+                                          'пользователей c повышенным уровнем доступа')
 
         lvl_handle = [v for i, v in enumerate(self._user_required_level_handlers)
                       if v[0] == handler_handlable_msg[0]][0]
