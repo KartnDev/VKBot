@@ -1,6 +1,6 @@
 from enum import IntEnum
 
-import requests as requests
+import requests
 from vk_api import vk_api
 
 
@@ -22,6 +22,8 @@ class VkCore:
         _res = requests.get('https://api.vk.com/method/' + method_name + "?" + args)
         if _res.ok:
             return _res.text
+        else:
+            pass    # TODO log error
 
     def method(self, method_name: str, args: dict) -> str:
         args.update({'access_token': self.access_token, 'v': self.version})
