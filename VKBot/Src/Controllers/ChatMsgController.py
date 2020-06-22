@@ -1,6 +1,6 @@
-from Src.BotFramework.Vkontakte.EventSender import ChatEventSender
-from Src.BotFramework.Vkontakte.VkAction import VkAction
-from Src.BotFramework.Vkontakte.SDK import *
+from Src.BotFramework.Vkontakte.Vk.SDK.EventSender import ChatEventSender
+from Src.BotFramework.Vkontakte.Vk.VkApiAction.VkAction import VkAction
+from Src.BotFramework.Vkontakte.Vk.SDK.SDK import *
 from Src.Database.Connector import DbConnection, DbConnVersion
 
 

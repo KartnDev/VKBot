@@ -1,12 +1,12 @@
 import inspect
 
-from Src.BotFramework.Vkontakte.EventSender import ChatEventSender, UserEventSender
-from Src.BotFramework.Vkontakte.VkAction import VkAction
+from Src.BotFramework.Vkontakte.Vk.SDK.EventSender import ChatEventSender, UserEventSender
+from Src.BotFramework.Vkontakte.Vk.VkApiAction.VkAction import VkAction
 from Src.Controllers.ChatMsgController import ChatMsgController
 from Src.Controllers.UserMsgController import UserMsgController
-from Src.Vk.LongPollListener.LongpollListener import LongPollListener
+from Src.BotFramework.Vkontakte.Vk.LongPollListener.LongpollListener import LongPollListener
 from Src.Database.UserDbWorker import UserDbWorker
-from Src.Vk.VkApiCore import VkCore
+from Src.BotFramework.Vkontakte.Vk.Utils.VkApiCore import VkCore
 
 
 class LongPollHandler:

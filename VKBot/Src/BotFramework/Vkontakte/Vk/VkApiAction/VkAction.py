@@ -1,9 +1,7 @@
 import logging
 import random
 
-from vk_api import vk_api
-
-from Src.Vk.VkApiCore import VkCore
+from Src.BotFramework.Vkontakte.Vk.Utils.VkApiCore import VkCore
 
 
 class VkAction:

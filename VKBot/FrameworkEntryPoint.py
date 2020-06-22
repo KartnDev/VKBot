@@ -1,7 +1,7 @@
 import asyncio
 
 from Src.BotFramework.ThreadPoolRunner.TaskLoopExecutor import EventEngine
-from Src.Vk.VkApiCore import VkCore
+from Src.BotFramework.Vkontakte.Vk.Utils.VkApiCore import VkCore
 
 
 async def main_func():

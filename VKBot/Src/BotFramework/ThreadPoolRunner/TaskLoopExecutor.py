@@ -1,7 +1,5 @@
-import asyncio
-
 from Src.BotFramework.Vkontakte.LongpollHandler import LongPollHandler
-from Src.Vk.VkApiCore import VkCore
+from Src.BotFramework.Vkontakte.Vk.Utils.VkApiCore import VkCore
 
 
 class EventEngine:

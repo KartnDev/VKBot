@@ -1,6 +1,6 @@
-from Src.BotFramework.Vkontakte import VkAction
-from Src.BotFramework.Vkontakte.EventSender import UserEventSender
-from Src.BotFramework.Vkontakte.SDK import HandleMessage, Authorized, RequiredLvl
+from Src.BotFramework.Vkontakte.Vk.VkApiAction import VkAction
+from Src.BotFramework.Vkontakte.Vk.SDK.EventSender import UserEventSender
+from Src.BotFramework.Vkontakte.Vk.SDK.SDK import HandleMessage, Authorized, RequiredLvl
 
 
 class UserMsgController:
