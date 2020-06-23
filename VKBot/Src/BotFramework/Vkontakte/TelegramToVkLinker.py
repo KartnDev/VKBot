@@ -12,4 +12,4 @@ class TelegramToVkLinker:
             msg = "{0} в {1}: {2}".format(vk_event['username'], vk_event["chat_id"], vk_event["message"])
             self.telegram_action.send_message_chat(telegram_chat,  msg)
 
-    async def entire_vk_messaging(self, ):
+

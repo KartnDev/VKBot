@@ -8,5 +8,7 @@ class TelegramAction:
     def get_updates_json(self):
         return self.telegram_core.method('getUpdates')
 
-    def
+    async def send_message(self, chat_id: int, message: str):
+        return await self.telegram_core.method_async('sendMessage', {'chat_id': chat_id, 'text': message})
 
+    

@@ -35,3 +35,17 @@ class Authorized(object):
         def new_func(*args, **kwargs):
             return fn(*args, **kwargs)
         return new_func
+
+
+class InvokeOnAnyMessage(object):
+    def __call__(self, fn, *args, **kwargs):
+        def new_func(*args, **kwargs):
+            return fn(*args, **kwargs)
+        return new_func
+
+
+class InvokeOnAnyEvent(object):
+    def __call__(self, fn, *args, **kwargs):
+        def new_func(*args, **kwargs):
+            return fn(*args, **kwargs)
+        return new_func

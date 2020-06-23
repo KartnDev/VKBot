@@ -2,8 +2,8 @@ import inspect
 
 from Src.BotFramework.Vkontakte.Vk.SDK.EventSender import ChatEventSender, UserEventSender
 from Src.BotFramework.Vkontakte.Vk.VkApiAction.VkAction import VkAction
-from Src.Controllers.ChatMsgController import ChatMsgController
-from Src.Controllers.UserMsgController import UserMsgController
+from Src.Controllers.VkControllers.ChatMsgController import ChatMsgController
+from Src.Controllers.VkControllers.UserMsgController import UserMsgController
 from Src.BotFramework.Vkontakte.Vk.LongPollListener.LongpollListener import LongPollListener
 from Src.Database.UserDbWorker import UserDbWorker
 from Src.BotFramework.Vkontakte.Vk.Utils.VkApiCore import VkCore
