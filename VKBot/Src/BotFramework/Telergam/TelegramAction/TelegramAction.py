@@ -8,5 +8,5 @@ class TelegramAction:
     def get_updates_json(self):
         return self.telegram_core.method('getUpdates')
 
-
+    def
 
