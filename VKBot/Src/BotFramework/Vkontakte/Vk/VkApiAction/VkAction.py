@@ -32,3 +32,6 @@ class VkAction:
 
     def send_picture_by_url(self):
         pass
+
+    def get_api_core(self) -> VkCore:
+        return self._vk_api_core

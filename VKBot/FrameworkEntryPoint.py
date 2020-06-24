@@ -1,12 +1,14 @@
 import asyncio
 
+from Src.BotFramework.Telergam.Utils.TelegramCore import TelegramCore
 from Src.BotFramework.ThreadPoolRunner.TaskLoopExecutor import EventEngine
 from Src.BotFramework.Vkontakte.Vk.Utils.VkApiCore import VkCore
 
 
 async def main_func():
-    core = VkCore('', 'cdefe64cad4dfb777159fed5802a6a85ddc7a29eaa4e7f6e876096a07ce53887baa982487b8883b964f8d')
-    bot_tasks = EventEngine(core)
+    core = VkCore('', '')
+    telegram_core = TelegramCore(':')
+    bot_tasks = EventEngine(core, telegram_core)
     await bot_tasks.run_tasks()
 
 

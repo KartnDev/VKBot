@@ -14,8 +14,8 @@ class AnyController:
 
     @InvokeOnAnyMessage()
     async def handle_vk_msg_and_send_to_telegram(self, event_sender: VkEventSender):
-        self.acting.telegram_action.send_message(1123213213213, "3123213")
+        print("new message")
 
     @InvokeOnAnyEvent()
     async def log_any_event(self, event_sender: VkEventSender):
-        print(event_sender.all_data_event)
+        print("new event")

@@ -1,7 +1,9 @@
 import inspect
 
-from Src.BotFramework.Vkontakte.Vk.SDK.EventSender import ChatEventSender, UserEventSender
+from Src.BotFramework.Vkontakte.Vk.SDK.EventSender import ChatEventSender, UserEventSender, VkEventSender
 from Src.BotFramework.Vkontakte.Vk.VkApiAction.VkAction import VkAction
+from Src.Controllers.ControllerActioner import ControllerAction
+from Src.Controllers.VkControllers.AnyController import AnyController
 from Src.Controllers.VkControllers.ChatMsgController import ChatMsgController
 from Src.Controllers.VkControllers.UserMsgController import UserMsgController
 from Src.BotFramework.Vkontakte.Vk.LongPollListener.LongpollListener import LongPollListener
@@ -11,19 +13,27 @@ from Src.BotFramework.Vkontakte.Vk.Utils.VkApiCore import VkCore
 
 class LongPollHandler:
 
-    def __init__(self, vk_api_core: VkCore):
-        self._long_poll = LongPollListener(vk_api_core)
-        self._vk_action = VkAction(vk_api_core)
+    def __init__(self, action: ControllerAction):
+        self._controller_action = action
+        self._vk_action = self._controller_action.vk_action
+        self._vk_core = self._vk_action.get_api_core()
+        self._vk_listener = LongPollListener(self._vk_core)
 
         # Handler prepare for users message control context
-        self._user_msg_controller = UserMsgController(self._vk_action)
+        self._any_controller = AnyController(self._controller_action)
+
+        self._any_event_handlers = self._methods_with_decorator(AnyController, "InvokeOnAnyEvent")
+        self._any_message_handlers = self._methods_with_decorator(AnyController, "InvokeOnAnyMessage")
+
+        # Handler prepare for users message control context
+        self._user_msg_controller = UserMsgController(self._controller_action)
 
         self._user_msg_handlers = self._methods_with_decorator(UserMsgController, "HandleMessage")
         self._user_required_level_handlers = self._methods_with_decorator(UserMsgController, "RequiredLvl")
         self._user_auth_handlers = self._methods_with_decorator(UserMsgController, "Authorized")
 
         # Handler prepare for chats messages control context
-        self._chat_controller = ChatMsgController(self._vk_action)
+        self._chat_controller = ChatMsgController(self._controller_action)
 
         self._chat_handlers = self._methods_with_decorator(ChatMsgController, "HandleMessage")
         self._chat_required_level_handlers = self._methods_with_decorator(ChatMsgController, "RequiredLvl")
@@ -59,9 +69,11 @@ class LongPollHandler:
         return self._user_wrr.contains(user_id)
 
     async def start_handle(self):
-        for event in self._long_poll.listen():
+        for event in self._vk_listener.listen():
             if 'type' in event and 'object' in event:
+                await self.__handle_any_event(event)
                 if event['type'] == 'message_new':
+                    await self.__handle_any_message(event)  # any message
                     obj = event['object']
                     if 'message' in obj:
                         msg = obj['message']
@@ -70,6 +82,20 @@ class LongPollHandler:
                                 await self.__find_chat_handler_invoke(msg)
                             elif msg['peer_id'] < int(2E9):  # from user
                                 await self.__find_user_msg_handler_invoke(msg)
+
+    # region any_handlers
+
+    async def __handle_any_message(self, msg: dict):
+        for _handler in self._any_message_handlers:
+            vk_event = VkEventSender(msg)
+            await getattr(self._any_controller, _handler[0])(vk_event)
+
+    async def __handle_any_event(self, event: dict):
+        for _handler in self._any_event_handlers:
+            vk_event = VkEventSender(event)
+            await getattr(self._any_controller, _handler[0])(vk_event)
+
+    # end region any_handlers
 
     # region chat_handlers
 
