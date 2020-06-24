@@ -3,7 +3,7 @@
 * DONT USE IT TOO MUCH                                                                       *
 *******************************************************************************************"""
 from Src.BotFramework.Vkontakte.Vk.SDK.EventSender import VkEventSender
-from Src.BotFramework.Vkontakte.Vk.SDK.SDK import InvokeOnAnyMessage, InvokeOnAnyEvent
+from Src.BotFramework.Vkontakte.Vk.SDK.VkAnnotationSDK import InvokeOnAnyMessage, InvokeOnAnyEvent
 from Src.Controllers.ControllerActioner import ControllerAction
 
 

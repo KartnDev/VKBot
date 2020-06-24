@@ -13,6 +13,6 @@ class EventEngine:
 
     async def run_tasks(self):
         await self._main_thread_vk.start_handle()
-        #await self._background_thread_telegram.start_handle()
+        await self._background_thread_telegram.start_handle()
 
 

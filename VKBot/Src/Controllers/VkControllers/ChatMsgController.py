@@ -1,5 +1,5 @@
 from Src.BotFramework.Vkontakte.Vk.SDK.EventSender import ChatEventSender
-from Src.BotFramework.Vkontakte.Vk.SDK.SDK import *
+from Src.BotFramework.Vkontakte.Vk.SDK.VkAnnotationSDK import *
 from Src.Controllers.ControllerActioner import ControllerAction
 from Src.Database.Connector import DbConnection, DbConnVersion
 

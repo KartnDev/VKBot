@@ -1,14 +1,11 @@
-import inspect
-
+from Src.BotFramework.Utils.ReflectionUtils import methods_with_decorator
 from Src.BotFramework.Vkontakte.Vk.SDK.EventSender import ChatEventSender, UserEventSender, VkEventSender
-from Src.BotFramework.Vkontakte.Vk.VkApiAction.VkAction import VkAction
 from Src.Controllers.ControllerActioner import ControllerAction
 from Src.Controllers.VkControllers.AnyController import AnyController
 from Src.Controllers.VkControllers.ChatMsgController import ChatMsgController
 from Src.Controllers.VkControllers.UserMsgController import UserMsgController
 from Src.BotFramework.Vkontakte.Vk.LongPollListener.LongpollListener import LongPollListener
 from Src.Database.UserDbWorker import UserDbWorker
-from Src.BotFramework.Vkontakte.Vk.Utils.VkApiCore import VkCore
 
 
 class LongPollHandler:
@@ -19,45 +16,27 @@ class LongPollHandler:
         self._vk_core = self._vk_action.get_api_core()
         self._vk_listener = LongPollListener(self._vk_core)
 
-        # Handler prepare for users message control context
+        # Handler prepare for any event control context
         self._any_controller = AnyController(self._controller_action)
 
-        self._any_event_handlers = self._methods_with_decorator(AnyController, "InvokeOnAnyEvent")
-        self._any_message_handlers = self._methods_with_decorator(AnyController, "InvokeOnAnyMessage")
+        self._any_event_handlers = methods_with_decorator(AnyController, "InvokeOnAnyEvent")
+        self._any_message_handlers = methods_with_decorator(AnyController, "InvokeOnAnyMessage")
 
         # Handler prepare for users message control context
         self._user_msg_controller = UserMsgController(self._controller_action)
 
-        self._user_msg_handlers = self._methods_with_decorator(UserMsgController, "HandleMessage")
-        self._user_required_level_handlers = self._methods_with_decorator(UserMsgController, "RequiredLvl")
-        self._user_auth_handlers = self._methods_with_decorator(UserMsgController, "Authorized")
+        self._user_msg_handlers = methods_with_decorator(UserMsgController, "HandleMessage")
+        self._user_required_level_handlers = methods_with_decorator(UserMsgController, "RequiredLvl")
+        self._user_auth_handlers = methods_with_decorator(UserMsgController, "Authorized")
 
         # Handler prepare for chats messages control context
         self._chat_controller = ChatMsgController(self._controller_action)
 
-        self._chat_handlers = self._methods_with_decorator(ChatMsgController, "HandleMessage")
-        self._chat_required_level_handlers = self._methods_with_decorator(ChatMsgController, "RequiredLvl")
-        self._chat_auth_handlers = self._methods_with_decorator(ChatMsgController, "Authorized")
+        self._chat_handlers = methods_with_decorator(ChatMsgController, "HandleMessage")
+        self._chat_required_level_handlers = methods_with_decorator(ChatMsgController, "RequiredLvl")
+        self._chat_auth_handlers = methods_with_decorator(ChatMsgController, "Authorized")
 
         self._user_wrr = UserDbWorker()
-
-    @staticmethod
-    def _methods_with_decorator(controller_name, decorator_name: str) -> [(str, str)]:
-        # raise Warning("\"_methods_with_decorator\" Method works with errors! do unit tests and rewrite it")
-        source_lines = inspect.getsourcelines(controller_name)[0]
-        result = []
-        for i, line in enumerate(source_lines):
-            line = line.strip()
-            if line.split('(')[0].strip() == '@' + decorator_name:
-                param = line.split('(')[1].split(')')[0]
-                next_line = source_lines[i + 1]
-                while '@' in next_line:
-                    i += 1
-                    next_line = source_lines[i + 1]
-                decor_name = next_line.split('def')[1].split('(')[0].strip()
-                item = (decor_name, param)
-                result.append(item)
-        return result
 
     def _send_call_error_chat(self, chat_id: int, msg: str):
         return self._vk_action.send_message_chat(chat_id=chat_id, message="Call error: " + msg)
@@ -139,7 +118,7 @@ class LongPollHandler:
             chat_event = ChatEventSender(message['peer_id'] - int(2E9),
                                          int(message['from_id']),
                                          {"message": message['text'],
-                                          "attachment": message['attachments']})
+                                          "attachment": message['attachments']}, message)
             await getattr(self._chat_controller, handler_handlable_msg[0])(chat_event)
         else:
             self._send_call_error_chat(message['peer_id'] - int(2E9),
@@ -163,7 +142,7 @@ class LongPollHandler:
             chat_event = ChatEventSender(message['peer_id'] - int(2E9),
                                          int(message['from_id']),
                                          {"message": message['text'],
-                                          "attachment": message['attachments']})
+                                          "attachment": message['attachments']}, message)
             await getattr(self._chat_controller, handler_handlable_msg[0])(chat_event)
         else:
             self._send_call_error_chat(message['peer_id'] - int(2E9),
@@ -175,7 +154,7 @@ class LongPollHandler:
         chat_event = ChatEventSender(message['peer_id'] - int(2E9),
                                      int(message['from_id']),
                                      {"message": message['text'],
-                                      "attachment": message['attachments']})
+                                      "attachment": message['attachments']}, message)
         await getattr(self._chat_controller, handler_handlable_msg[0])(chat_event)
 
     # region end chat_handlers
@@ -220,7 +199,7 @@ class LongPollHandler:
     async def __invoke_auth_handler_user(self, user_id: int, message: dict, handler_handlable_msg: (str, str)):
         if self._user_wrr.contains(user_id):
             user_msg_event = UserEventSender(message['from_id'], {"message": message['text'],
-                                                                  "attachment": message['attachments']})
+                                                                  "attachment": message['attachments']}, message)
             await getattr(self._user_msg_controller, handler_handlable_msg[0])(user_msg_event)
 
         else:
@@ -239,7 +218,7 @@ class LongPollHandler:
         needed_lvl = int(lvl_handle[1].split('=')[1])
         if curr_u_lvl >= needed_lvl:
             user_msg_event = UserEventSender(message['from_id'], {"message": message['text'],
-                                                                  "attachment": message['attachments']})
+                                                                  "attachment": message['attachments']}, message)
             await getattr(self._user_msg_controller, handler_handlable_msg[0])(user_msg_event)
         else:
             self._send_call_error_to_user(user_id, """Нет доступа к команде: required lvl = {0},
@@ -247,7 +226,7 @@ class LongPollHandler:
 
     async def __invoke_base_handler_user(self, user_id: int, message: dict, handler_handlable_msg: (str, str)):
         user_msg_event = UserEventSender(message['from_id'], {"message": message['text'],
-                                                              "attachment": message['attachments']})
+                                                              "attachment": message['attachments']}, message)
         await getattr(self._user_msg_controller, handler_handlable_msg[0])(user_msg_event)
 
     # region end user_messages_handler
