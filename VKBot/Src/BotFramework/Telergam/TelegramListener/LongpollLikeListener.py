@@ -15,13 +15,13 @@ class TelegramListener(TelegramAction):
             last_update_id = _res['result'][-1]['update_id']
             while True:
                 _new_res = self.get_updates_json()
-                if last_update_id < _new_res[1]['update_id']:
-                    delta_last = _new_res[1]['update_id'] - last_update_id
+                if last_update_id < _new_res['result'][-1]['update_id']:
+                    delta_last = _new_res['result'][-1]['update_id'] - last_update_id
                     if delta_last == 1:
-                        yield _new_res[1] #['message']['text']
+                        yield _new_res['result'][-1]
                     elif delta_last > 1:
                         for item in _new_res['result'][-delta_last:]:
-                            yield item #['message']['text']
+                            yield item
                     last_update_id = _new_res['result'][-1]['update_id']
                 await asyncio.sleep(1.5)
 

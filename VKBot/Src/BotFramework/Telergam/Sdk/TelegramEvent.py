@@ -1,17 +1,30 @@
-class ChatEventSender:
-    def __init__(self, chat_id: int, user_sender_id: int, msg_event: dict, all_data_event: dict = None):
-        """
-        :param chat_id: int > 0
-        :param user_sender_id: vk_id > 0
-        :param msg_event: dictionary like
-        {
-            "message": "some_message" or None,
-            "attachment": "attachment" or None
-            etc
-        }
-        """
-        self.chat_id = chat_id
-        self.user_id = user_sender_id
-        self.event = msg_event
-        if all_data_event is not None:
-            self.all_data_event = all_data_event
+import datetime
+
+
+class TelegramChatEventSender:
+    def __init__(self, telegram_json: dict):
+        self.update_id = telegram_json['update_id']
+        self.message: dict = telegram_json['message']
+        self.message_id: int = self.message['message_id']
+
+        self.from_json: dict = self.message['from']
+
+        self.from_id: int = self.from_json['id']
+        self.is_bot: bool = self.from_json['is_bot']
+        self.first_name_sender: str = self.from_json['first_name']
+        self.last_name_sender: str = self.from_json['last_name']
+        self.username_sender: str = self.from_json['username']
+        self.language_code: str = self.from_json['language_code']
+
+        self.chat_json: dict = self.message['chat']
+
+        self.chat_id: int = self.chat_json['id']
+        self.chat_first_name = self.chat_json['first_name']
+        self.chat_last_name = self.chat_json['last_name']
+        self.chat_username = self.chat_json['username']
+        self.chat_first_name = self.chat_json['type']
+
+        self.date_int32: int = self.message['date']
+        self.date: datetime = datetime.timedelta(self.date_int32)
+
+        self.text_msg = self.message['text']
