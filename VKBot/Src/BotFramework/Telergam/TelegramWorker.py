@@ -2,6 +2,7 @@ from Src.BotFramework.Telergam.Sdk.TelegramEvent import TelegramChatEventSender
 from Src.BotFramework.Telergam.TelegramListener.LongpollLikeListener import TelegramListener
 from Src.BotFramework.Utils.ReflectionUtils import methods_with_decorator
 from Src.Controllers.ControllerActioner import ControllerAction
+from Src.Controllers.TelegramControllers.AnyTelegramController import AnyTelegramController
 from Src.Controllers.TelegramControllers.MsgController import MsgController
 
 
@@ -13,7 +14,11 @@ class TelegramWorker:
         self._telegram_listener = TelegramListener(self._telegram_core)
 
         # Handler prepare for any event control context
-        # TODO any handler here
+
+        self._any_telegram_controller = AnyTelegramController(self._controller_action)
+
+        self._any_message_handlers = methods_with_decorator(AnyTelegramController, "InvokeOnAnyMessage")
+        self._any_event_handlers = methods_with_decorator(AnyTelegramController, "InvokeOnAnyEvent")
 
         # Handler prepare for message control context
 
@@ -23,9 +28,19 @@ class TelegramWorker:
 
     async def start_handle(self):
         async for event in self._telegram_listener.listen():
+            await self.__handle_any_event(event)
             if self.__valid(event):
                 telegram_event = TelegramChatEventSender(event)
                 await self.__find_telegram_msg_handler_invoke(telegram_event)
+                await self.__handle_any_message(event)
+
+    async def __handle_any_event(self, event: dict):
+        for _handler in self._any_event_handlers:
+            await getattr(self._any_telegram_controller, _handler[0])(event)
+
+    async def __handle_any_message(self, event: dict):
+        for _handler in self._any_message_handlers:
+            await getattr(self._any_telegram_controller, _handler[0])(event)
 
     async def __find_telegram_msg_handler_invoke(self, telegram_event: TelegramChatEventSender):
         for _handler in self._user_msg_handlers:
@@ -57,5 +72,9 @@ class TelegramWorker:
                'chat' in event and \
                'date' in event and \
                 'text' in event
+
+
+
+
 
 

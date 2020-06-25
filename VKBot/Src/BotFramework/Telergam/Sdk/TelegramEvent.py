@@ -3,6 +3,9 @@ import datetime
 
 class TelegramChatEventSender:
     def __init__(self, telegram_json: dict):
+
+        self.telegram_full_event = telegram_json
+
         self.update_id = telegram_json['update_id']
         self.message: dict = telegram_json['message']
         self.message_id: int = self.message['message_id']
