@@ -733,3 +733,139 @@ class TelegramAction:
         if error_message:
             payload['error_message'] = error_message
         return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    async def answer_callback_query(self, callback_query_id: int, text: str = None, show_alert: bool = None,
+                                    url: str = None, cache_time: int = None):
+        """
+        Use this method to send answers to callback queries sent from inline keyboards. The answer will be displayed to the user as a notification at the top of the chat screen or as an alert. On success, True is returned.
+        Alternatively, the user can be redirected to the specified Game URL. For this option to work, you must first create a game for your bot via BotFather and accept the terms. Otherwise, you may use links like telegram.me/your_bot?start=XXXX that open your bot with a parameter.
+        :param token: Bot's token (you don't need to fill this)
+        :param callback_query_id: Unique identifier for the query to be answered
+        :param text: (Optional) Text of the notification. If not specified, nothing will be shown to the user, 0-200 characters
+        :param show_alert: (Optional) If true, an alert will be shown by the client instead of a notification at the top of the chat screen. Defaults to false.
+        :param url: (Optional) URL that will be opened by the user's client. If you have created a Game and accepted the conditions via @Botfather, specify the URL that opens your game – note that this will only work if the query comes from a callback_game button.
+        Otherwise, you may use links like telegram.me/your_bot?start=XXXX that open your bot with a parameter.
+        :param cache_time: (Optional) The maximum amount of time in seconds that the result of the callback query may be cached client-side. Telegram apps will support caching starting in version 3.14. Defaults to 0.
+        :return:
+        """
+        method_url = 'answerCallbackQuery'
+        payload = {'callback_query_id': callback_query_id}
+        if text:
+            payload['text'] = text
+        if show_alert is not None:
+            payload['show_alert'] = show_alert
+        if url:
+            payload['url'] = url
+        if cache_time is not None:
+            payload['cache_time'] = cache_time
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    async def answer_inline_query(self, inline_query_id: int, results, cache_time: int = None, is_personal: bool = None,
+                                  next_offset=None, switch_pm_text=None, switch_pm_parameter=None):
+        method_url = 'answerInlineQuery'
+        payload = {'inline_query_id': inline_query_id, 'results': self._convert_list_json_serializable(results)}
+        if cache_time is not None:
+            payload['cache_time'] = cache_time
+        if is_personal is not None:
+            payload['is_personal'] = is_personal
+        if next_offset is not None:
+            payload['next_offset'] = next_offset
+        if switch_pm_text:
+            payload['switch_pm_text'] = switch_pm_text
+        if switch_pm_parameter:
+            payload['switch_pm_parameter'] = switch_pm_parameter
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    async def get_sticker_set(self, name: str):
+        method_url = 'getStickerSet'
+        return await self._telegram_core.method_async(method_name=method_url, args={'name': name})
+
+    async def upload_sticker_file(self, user_id: int, png_sticker):
+        method_url = 'uploadStickerFile'
+        payload = {'user_id': user_id}
+        files = {'png_sticker': png_sticker}
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post', files=files)
+
+    async def create_new_sticker_set(self, user_id: int, name: str, title: str, png_sticker,
+                                     emojis, contains_masks=None, mask_position=None):
+        method_url = 'createNewStickerSet'
+        payload = {'user_id': user_id, 'name': name, 'title': title, 'emojis': emojis}
+        files = None
+        if not isinstance(png_sticker, str):
+            files = {'png_sticker': png_sticker}
+        else:
+            payload['png_sticker'] = png_sticker
+        if contains_masks is not None:
+            payload['contains_masks'] = contains_masks
+        if mask_position:
+            payload['mask_position'] = mask_position.to_json()
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post', files=files)
+
+    async def add_sticker_to_set(self, user_id: int, name: str, png_sticker, emojis, mask_position):
+        method_url = 'addStickerToSet'
+        payload = {'user_id': user_id, 'name': name, 'emojis': emojis}
+        files = None
+        if not isinstance(png_sticker, str):
+            files = {'png_sticker': png_sticker}
+        else:
+            payload['png_sticker'] = png_sticker
+        if mask_position:
+            payload['mask_position'] = mask_position.to_json()
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post', files=files)
+
+    async def set_sticker_position_in_set(self, sticker, position):
+        method_url = 'setStickerPositionInSet'
+        payload = {'sticker': sticker, 'position': position}
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    async def delete_sticker_from_set(self, sticker):
+        method_url = 'deleteStickerFromSet'
+        payload = {'sticker': sticker}
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    async def send_poll(self, chat_id, question, options, is_anonymous: bool = None, type_t: str = None,
+                        allows_multiple_answers=None, correct_option_id: int = None,
+                        explanation=None, explanation_parse_mode=None, open_period=None, close_date=None,
+                        is_closed: bool = None, disable_notifications=False, reply_to_message_id: int = None,
+                        reply_markup=None, timeout: int = None):
+        method_url = r'sendPoll'
+        payload = {
+            'chat_id': str(chat_id),
+            'question': question,
+            'options': json.dumps(options)}
+
+        if is_anonymous is not None:
+            payload['is_anonymous'] = is_anonymous
+        if type_t is not None:
+            payload['type'] = type_t
+        if allows_multiple_answers is not None:
+            payload['allows_multiple_answers'] = allows_multiple_answers
+        if correct_option_id is not None:
+            payload['correct_option_id'] = correct_option_id
+        if explanation is not None:
+            payload['explanation'] = explanation
+        if explanation_parse_mode is not None:
+            payload['explanation_parse_mode'] = explanation_parse_mode
+        if open_period is not None:
+            payload['open_period'] = open_period
+        if close_date is not None:
+            payload['close_date'] = close_date
+        if is_closed is not None:
+            payload['is_closed'] = is_closed
+
+        if disable_notifications:
+            payload['disable_notification'] = disable_notifications
+        if reply_to_message_id is not None:
+            payload['reply_to_message_id'] = reply_to_message_id
+        if reply_markup is not None:
+            payload['reply_markup'] = self._convert_markup(reply_markup)
+        if timeout:
+            payload['connect-timeout'] = timeout
+        return await self._telegram_core.method_async(method_name=method_url, args=payload)
+
+    async def stop_poll(self, chat_id: int , message_id: int, reply_markup=None):
+        method_url = r'stopPoll'
+        payload = {'chat_id': str(chat_id), 'message_id': message_id}
+        if reply_markup:
+            payload['reply_markup'] = self._convert_markup(reply_markup)
+        return await self._telegram_core.method_async(method_name=method_url, args=payload)
