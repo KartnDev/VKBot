@@ -66,6 +66,24 @@ class TelegramAction:
             media.append(media_dict)
         return json.dumps(media), files
 
+    @staticmethod
+    def get_method_by_type(data_type: str):
+        if data_type == 'document':
+            return r'sendDocument'
+        if data_type == 'sticker':
+            return r'sendSticker'
+
+    @staticmethod
+    def _convert_list_json_serializable(results):
+        ret = ''
+        for r in results:
+            # TODO check for isinstance(markup, types.JsonSerializable):
+            if True:
+                ret = ret + r.to_json() + ','
+        if len(ret) > 0:
+            ret = ret[:-1]
+        return '[' + ret + ']'
+
     async def send_poll_async(self, chat_id: int, question: str, options: dict,
                               is_anonymous=None, type_t=None, allows_multiple_answers=None, correct_option_id=None,
                               explanation=None, explanation_parse_mode=None, open_period=None, close_date=None,
@@ -311,4 +329,229 @@ class TelegramAction:
 
         return await self._telegram_core.method_async(method_name=method_url, args=payload, files=files, method='post')
 
-    
+    async def send_voice(self, chat_id: int, voice, caption=None, duration=None, reply_to_message_id: int = None,
+                         reply_markup=None, parse_mode: int = None, disable_notification=None, timeout: int = None):
+        method_url = r'sendVoice'
+        payload = {'chat_id': chat_id}
+        files = None
+        if not isinstance(voice, str):
+            files = {'voice': voice}
+        else:
+            payload['voice'] = voice
+        if caption:
+            payload['caption'] = caption
+        if duration:
+            payload['duration'] = duration
+        if reply_to_message_id:
+            payload['reply_to_message_id'] = reply_to_message_id
+        if reply_markup:
+            payload['reply_markup'] = self._convert_markup(reply_markup)
+        if parse_mode:
+            payload['parse_mode'] = parse_mode
+        if disable_notification is not None:
+            payload['disable_notification'] = disable_notification
+        if timeout:
+            payload['connect-timeout'] = timeout
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, files=files, method='post')
+
+    async def send_video_note(self, chat_id: int, data, duration: int = None, length: int = None, timeout: int = None,
+                              reply_to_message_id: int = None, reply_markup=None, disable_notification=None):
+        method_url = r'sendVideoNote'
+        payload = {'chat_id': chat_id}
+        files = None
+        if not isinstance(data, str):
+            files = {'video_note': data}
+        else:
+            payload['video_note'] = data
+        if duration:
+            payload['duration'] = duration
+        if length:
+            payload['length'] = length
+        else:
+            payload['length'] = 639  # seems like it is MAX length size
+        if reply_to_message_id:
+            payload['reply_to_message_id'] = reply_to_message_id
+        if reply_markup:
+            payload['reply_markup'] = self._convert_markup(reply_markup)
+        if disable_notification is not None:
+            payload['disable_notification'] = disable_notification
+        if timeout:
+            payload['connect-timeout'] = timeout
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, files=files, method='post')
+
+    async def send_audio(self, chat_id: int, audio, caption=None, duration: int = None, performer=None,
+                         title: str = None, reply_to_message_id: int = None, reply_markup=None, parse_mode: int = None,
+                         disable_notification=None, timeout: int = None, thumb=None):
+        method_url = r'sendAudio'
+        payload = {'chat_id': chat_id}
+        files = None
+        if not isinstance(audio, str):
+            files = {'audio': audio}
+        else:
+            payload['audio'] = audio
+        if caption:
+            payload['caption'] = caption
+        if duration:
+            payload['duration'] = duration
+        if performer:
+            payload['performer'] = performer
+        if title:
+            payload['title'] = title
+        if reply_to_message_id:
+            payload['reply_to_message_id'] = reply_to_message_id
+        if reply_markup:
+            payload['reply_markup'] = self._convert_markup(reply_markup)
+        if parse_mode:
+            payload['parse_mode'] = parse_mode
+        if disable_notification is not None:
+            payload['disable_notification'] = disable_notification
+        if timeout:
+            payload['connect-timeout'] = timeout
+        if thumb:
+            if not isinstance(thumb, str):
+                files['thumb'] = thumb
+            else:
+                payload['thumb'] = thumb
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, files=files, method='post')
+
+    async def send_data(self, chat_id: int, data, data_type: str, reply_to_message_id: int = None, reply_markup=None,
+                        parse_mode: int = None, disable_notification=None, timeout: int = None, caption=None):
+        method_url = self.get_method_by_type(data_type)
+        payload = {'chat_id': chat_id}
+        files = None
+        if not isinstance(data, str):
+            files = {data_type: data}
+        else:
+            payload[data_type] = data
+        if reply_to_message_id:
+            payload['reply_to_message_id'] = reply_to_message_id
+        if reply_markup:
+            payload['reply_markup'] = self._convert_markup(reply_markup)
+        if parse_mode and data_type == 'document':
+            payload['parse_mode'] = parse_mode
+        if disable_notification is not None:
+            payload['disable_notification'] = disable_notification
+        if timeout:
+            payload['connect-timeout'] = timeout
+        if caption:
+            payload['caption'] = caption
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, files=files, method='post')
+
+    async def kick_chat_member(self, chat_id: int, user_id: int, until_date=None):
+        method_url = 'kickChatMember'
+        payload = {'chat_id': chat_id, 'user_id': user_id}
+        if until_date:
+            payload['until_date'] = until_date
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    async def unban_chat_member(self, chat_id: int, user_id: int):
+        method_url = 'unbanChatMember'
+        payload = {'chat_id': chat_id, 'user_id': user_id}
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    async def restrict_chat_member(self, chat_id: int, user_id: int, until_date=None,
+                                   can_send_messages=None, can_send_media_messages=None,
+                                   can_send_polls=None, can_send_other_messages=None,
+                                   can_add_web_page_previews=None, can_change_info=None,
+                                   can_invite_users=None, can_pin_messages=None):
+        method_url = 'restrictChatMember'
+        payload = {'chat_id': chat_id, 'user_id': user_id}
+        if until_date is not None:
+            payload['until_date'] = until_date
+        if can_send_messages is not None:
+            payload['can_send_messages'] = can_send_messages
+        if can_send_media_messages is not None:
+            payload['can_send_media_messages'] = can_send_media_messages
+        if can_send_polls is not None:
+            payload['can_send_polls'] = can_send_polls
+        if can_send_other_messages is not None:
+            payload['can_send_other_messages'] = can_send_other_messages
+        if can_add_web_page_previews is not None:
+            payload['can_add_web_page_previews'] = can_add_web_page_previews
+        if can_change_info is not None:
+            payload['can_change_info'] = can_change_info
+        if can_invite_users is not None:
+            payload['can_invite_users'] = can_invite_users
+        if can_pin_messages is not None:
+            payload['can_pin_messages'] = can_pin_messages
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    async def promote_chat_member(self, chat_id: int, user_id: int, can_change_info=None, can_post_messages=None,
+                                  can_edit_messages=None, can_delete_messages=None, can_invite_users=None,
+                                  can_restrict_members=None, can_pin_messages=None, can_promote_members=None):
+        method_url = 'promoteChatMember'
+        payload = {'chat_id': chat_id, 'user_id': user_id}
+        if can_change_info is not None:
+            payload['can_change_info'] = can_change_info
+        if can_post_messages is not None:
+            payload['can_post_messages'] = can_post_messages
+        if can_edit_messages is not None:
+            payload['can_edit_messages'] = can_edit_messages
+        if can_delete_messages is not None:
+            payload['can_delete_messages'] = can_delete_messages
+        if can_invite_users is not None:
+            payload['can_invite_users'] = can_invite_users
+        if can_restrict_members is not None:
+            payload['can_restrict_members'] = can_restrict_members
+        if can_pin_messages is not None:
+            payload['can_pin_messages'] = can_pin_messages
+        if can_promote_members is not None:
+            payload['can_promote_members'] = can_promote_members
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    async def set_chat_administrator_custom_title(self, chat_id: int, user_id: int, custom_title: str):
+        method_url = 'setChatAdministratorCustomTitle'
+        payload = {'chat_id': chat_id, 'user_id': user_id, 'custom_title': custom_title}
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    async def set_chat_permissions(self, chat_id: int, permissions):
+        method_url = 'setChatPermissions'
+        payload = {'chat_id': chat_id, 'permissions': permissions.to_json()}
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    def export_chat_invite_link(self, chat_id: int):
+        method_url = 'exportChatInviteLink'
+        payload = {'chat_id': chat_id}
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    def set_chat_photo(self, chat_id: int, photo: any):
+        method_url = 'setChatPhoto'
+        payload = {'chat_id': chat_id}
+        files = None
+        if not isinstance(photo, str):
+            files = {'photo': photo}
+        else:
+            payload['photo'] = photo
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post', files=files)
+
+    def delete_chat_photo(self, chat_id: int):
+        method_url = 'deleteChatPhoto'
+        payload = {'chat_id': chat_id}
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    def set_chat_title(self, chat_id: int, title: str):
+        method_url = 'setChatTitle'
+        payload = {'chat_id': chat_id, 'title': title}
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    def set_my_commands(self, commands):
+        method_url = r'setMyCommands'
+        payload = {'commands': self._convert_list_json_serializable(commands)}
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    def set_chat_description(self, chat_id: int, description: str):
+        method_url = 'setChatDescription'
+        payload = {'chat_id': chat_id, 'description': description}
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    def pin_chat_message(self, chat_id: int, message_id: int, disable_notification=None):
+        method_url = 'pinChatMessage'
+        payload = {'chat_id': chat_id, 'message_id': message_id}
+        if disable_notification is not None:
+            payload['disable_notification'] = disable_notification
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    def unpin_chat_message(self, chat_id: int):
+        method_url = 'unpinChatMessage'
+        payload = {'chat_id': chat_id}
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
