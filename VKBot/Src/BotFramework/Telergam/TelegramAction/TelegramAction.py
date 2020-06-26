@@ -84,6 +84,13 @@ class TelegramAction:
             ret = ret[:-1]
         return '[' + ret + ']'
 
+    @staticmethod
+    def _convert_input_media(media):
+        # TODO if isinstance(media, types.InputMedia):
+        if True:
+            return media._convert_input_media()
+        return None, None
+
     async def send_poll_async(self, chat_id: int, question: str, options: dict,
                               is_anonymous=None, type_t=None, allows_multiple_answers=None, correct_option_id=None,
                               explanation=None, explanation_parse_mode=None, open_period=None, close_date=None,
@@ -514,7 +521,7 @@ class TelegramAction:
         payload = {'chat_id': chat_id}
         return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
 
-    def set_chat_photo(self, chat_id: int, photo: any):
+    async def set_chat_photo(self, chat_id: int, photo: any):
         method_url = 'setChatPhoto'
         payload = {'chat_id': chat_id}
         files = None
@@ -524,34 +531,104 @@ class TelegramAction:
             payload['photo'] = photo
         return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post', files=files)
 
-    def delete_chat_photo(self, chat_id: int):
+    async def delete_chat_photo(self, chat_id: int):
         method_url = 'deleteChatPhoto'
         payload = {'chat_id': chat_id}
         return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
 
-    def set_chat_title(self, chat_id: int, title: str):
+    async def set_chat_title(self, chat_id: int, title: str):
         method_url = 'setChatTitle'
         payload = {'chat_id': chat_id, 'title': title}
         return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
 
-    def set_my_commands(self, commands):
+    async def set_my_commands(self, commands):
         method_url = r'setMyCommands'
         payload = {'commands': self._convert_list_json_serializable(commands)}
         return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
 
-    def set_chat_description(self, chat_id: int, description: str):
+    async def set_chat_description(self, chat_id: int, description: str):
         method_url = 'setChatDescription'
         payload = {'chat_id': chat_id, 'description': description}
         return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
 
-    def pin_chat_message(self, chat_id: int, message_id: int, disable_notification=None):
+    async def pin_chat_message(self, chat_id: int, message_id: int, disable_notification=None):
         method_url = 'pinChatMessage'
         payload = {'chat_id': chat_id, 'message_id': message_id}
         if disable_notification is not None:
             payload['disable_notification'] = disable_notification
         return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
 
-    def unpin_chat_message(self, chat_id: int):
+    async def unpin_chat_message(self, chat_id: int):
         method_url = 'unpinChatMessage'
         payload = {'chat_id': chat_id}
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    async def edit_message_text(self, text: str, chat_id: int = None, message_id: int = None, reply_markup=None,
+                                inline_message_id: int = None, parse_mode: int = None, disable_web_page_preview=None):
+        method_url = r'editMessageText'
+        payload = {'text': text}
+        if chat_id:
+            payload['chat_id'] = chat_id
+        if message_id:
+            payload['message_id'] = message_id
+        if inline_message_id:
+            payload['inline_message_id'] = inline_message_id
+        if parse_mode:
+            payload['parse_mode'] = parse_mode
+        if disable_web_page_preview is not None:
+            payload['disable_web_page_preview'] = disable_web_page_preview
+        if reply_markup:
+            payload['reply_markup'] = self._convert_markup(reply_markup)
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    async def edit_message_caption(self, caption, chat_id: int = None, message_id: int = None,
+                                   inline_message_id: int = None,
+                                   parse_mode: int = None, reply_markup=None):
+        method_url = r'editMessageCaption'
+        payload = {'caption': caption}
+        if chat_id:
+            payload['chat_id'] = chat_id
+        if message_id:
+            payload['message_id'] = message_id
+        if inline_message_id:
+            payload['inline_message_id'] = inline_message_id
+        if parse_mode:
+            payload['parse_mode'] = parse_mode
+        if reply_markup:
+            payload['reply_markup'] = self._convert_markup(reply_markup)
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    async def edit_message_media(self, media, chat_id: int = None, message_id: int = None,
+                                 inline_message_id: int = None, reply_markup=None):
+        method_url = r'editMessageMedia'
+        media_json, file = self._convert_input_media(media)
+        payload = {'media': media_json}
+        if chat_id:
+            payload['chat_id'] = chat_id
+        if message_id:
+            payload['message_id'] = message_id
+        if inline_message_id:
+            payload['inline_message_id'] = inline_message_id
+        if reply_markup:
+            payload['reply_markup'] = self._convert_markup(reply_markup)
+            return await self._telegram_core.method_async(method_name=method_url, args=payload, files=file,
+                                                          method='post' if file else 'get')
+
+    async def edit_message_reply_markup(self, chat_id: int = None, message_id: int = None,
+                                        inline_message_id: int = None, reply_markup=None):
+        method_url = r'editMessageReplyMarkup'
+        payload = {}
+        if chat_id:
+            payload['chat_id'] = chat_id
+        if message_id:
+            payload['message_id'] = message_id
+        if inline_message_id:
+            payload['inline_message_id'] = inline_message_id
+        if reply_markup:
+            payload['reply_markup'] = self._convert_markup(reply_markup)
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
+
+    async def delete_message(self, chat_id: int, message_id: int):
+        method_url = r'deleteMessage'
+        payload = {'chat_id': chat_id, 'message_id': message_id}
         return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
