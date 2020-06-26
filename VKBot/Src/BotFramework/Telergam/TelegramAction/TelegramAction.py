@@ -17,8 +17,8 @@ class TelegramAction:
     async def base_send_message_async(self, chat_id: int, message: str):
         return await self._telegram_core.method_async('sendMessage', 'get', {'chat_id': chat_id, 'text': message})
 
-    async def send_message(self, chat_id, text,
-                           disable_web_page_preview=None, reply_to_message_id=None, reply_markup=None,
+    async def send_message(self, chat_id: int, text: str,
+                           disable_web_page_preview=None, reply_to_message_id: int = None, reply_markup=None,
                            parse_mode=None, disable_notification=None, timeout=None):
         """
         Use this method to send text messages. On success, the sent Message is returned.
@@ -53,7 +53,7 @@ class TelegramAction:
         # TODO check for isinstance(markup, types.JsonSerializable): return markup.to_json() else return markup
         return markup.to_json()
 
-    async def send_poll_async(self, chat_id, question, options,
+    async def send_poll_async(self, chat_id: int, question: str, options: dict,
                               is_anonymous=None, type_t=None, allows_multiple_answers=None, correct_option_id=None,
                               explanation=None, explanation_parse_mode=None, open_period=None, close_date=None,
                               is_closed=None,
@@ -91,4 +91,45 @@ class TelegramAction:
             payload['reply_markup'] = self._convert_markup(reply_markup)
         if timeout:
             payload['connect-timeout'] = timeout
-        return await self._telegram_core.method_async(method_url, payload)
+        return await self._telegram_core.method_async(method_name=method_url, args=payload)
+
+    def send_dice(self, chat_id: int,
+                  emoji=None, disable_notification=None, reply_to_message_id: int = None,
+                  reply_markup=None, timeout=None):
+        method_url = r'sendDice'
+        payload = {'chat_id': chat_id}
+        if emoji:
+            payload['emoji'] = emoji
+        if disable_notification is not None:
+            payload['disable_notification'] = disable_notification
+        if reply_to_message_id:
+            payload['reply_to_message_id'] = reply_to_message_id
+        if reply_markup:
+            payload['reply_markup'] = self._convert_markup(reply_markup)
+        if timeout:
+            payload['connect-timeout'] = timeout
+        return await self._telegram_core.method_async(method_name=method_url, args=payload)
+
+    def send_photo(self, chat_id, photo,
+                   caption=None, reply_to_message_id=None, reply_markup=None,
+                   parse_mode=None, disable_notification=None, timeout=None):
+        method_url = r'sendPhoto'
+        payload = {'chat_id': chat_id}
+        files = None
+        if not isinstance(photo, str):
+            files = {'photo': photo}
+        else:
+            payload['photo'] = photo
+        if caption:
+            payload['caption'] = caption
+        if reply_to_message_id:
+            payload['reply_to_message_id'] = reply_to_message_id
+        if reply_markup:
+            payload['reply_markup'] = self._convert_markup(reply_markup)
+        if parse_mode:
+            payload['parse_mode'] = parse_mode
+        if disable_notification is not None:
+            payload['disable_notification'] = disable_notification
+        if timeout:
+            payload['connect-timeout'] = timeout
+        return await self._telegram_core.method_async(method_name=method_url, args=payload, files=files, method='post')

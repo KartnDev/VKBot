@@ -32,16 +32,16 @@ class TelegramCore:
         else:
             pass  # TODO log error
 
-    async def method_async(self, method_name: str, method: str = 'get', args: dict = None):
+    async def method_async(self, method_name: str, method: str = 'get', args: dict = None, files=None):
         if args is not None:
             args_line = '&'.join('{0}={1}'.format(item, args[item]) for item in args if args[item] is not None)
             url = "https://api.telegram.org/bot{0}/{1}?{2}".format(self.token, method_name, args_line)
         else:
             url = "https://api.telegram.org/bot{0}/{1}".format(self.token, method_name)
         if method == 'get':
-            _res = await requests_async.get(url)
+            _res = await requests_async.get(url, files=files)
         elif method == 'post':
-            _res = await requests_async.post(url=url, json=json.dumps(args))
+            _res = await requests_async.post(url=url, json=json.dumps(args), files=files)
         else:
             raise Exception("Method should be post or get!")
 
