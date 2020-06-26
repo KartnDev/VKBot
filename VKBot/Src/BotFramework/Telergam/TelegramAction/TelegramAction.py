@@ -20,18 +20,6 @@ class TelegramAction:
     async def send_message(self, chat_id: int, text: str,
                            disable_web_page_preview=None, reply_to_message_id: int = None, reply_markup=None,
                            parse_mode=None, disable_notification=None, timeout=None):
-        """
-        Use this method to send text messages. On success, the sent Message is returned.
-        :param chat_id:
-        :param text:
-        :param disable_web_page_preview:
-        :param reply_to_message_id:
-        :param reply_markup:
-        :param parse_mode:
-        :param disable_notification:
-        :param timeout:
-        :return:
-        """
         method_url = r'sendMessage'
         payload = {'chat_id': str(chat_id), 'text': text}
         if disable_web_page_preview is not None:
@@ -47,49 +35,6 @@ class TelegramAction:
         if timeout:
             payload['connect-timeout'] = timeout
         return await self._telegram_core.method_async(method_url, 'post', payload)
-
-    @staticmethod
-    def _convert_markup(markup):
-        # TODO check for isinstance(markup, types.JsonSerializable): return markup.to_json() else return markup
-        return markup.to_json()
-
-    @staticmethod
-    def _convert_input_media_array(array):
-        media = []
-        files = {}
-        for input_media in array:
-            # TODO if isinstance(input_media, types.InputMedia):
-            media_dict = input_media.to_dict()
-            if media_dict['media'].startswith('attach://'):
-                key = media_dict['media'].replace('attach://', '')
-                files[key] = input_media.media
-            media.append(media_dict)
-        return json.dumps(media), files
-
-    @staticmethod
-    def get_method_by_type(data_type: str):
-        if data_type == 'document':
-            return r'sendDocument'
-        if data_type == 'sticker':
-            return r'sendSticker'
-
-    @staticmethod
-    def _convert_list_json_serializable(results):
-        ret = ''
-        for r in results:
-            # TODO check for isinstance(markup, types.JsonSerializable):
-            if True:
-                ret = ret + r.to_json() + ','
-        if len(ret) > 0:
-            ret = ret[:-1]
-        return '[' + ret + ']'
-
-    @staticmethod
-    def _convert_input_media(media):
-        # TODO if isinstance(media, types.InputMedia):
-        if True:
-            return media._convert_input_media()
-        return None, None
 
     async def send_poll_async(self, chat_id: int, question: str, options: dict,
                               is_anonymous=None, type_t=None, allows_multiple_answers=None, correct_option_id=None,
@@ -638,35 +583,6 @@ class TelegramAction:
                            photo_width: int = None, photo_height: int = None, need_name=None, need_phone_number=None,
                            need_email=None, need_shipping_address=None, is_flexible=None, disable_notification=None,
                            reply_to_message_id=None, reply_markup=None, provider_data=None, timeout: int = None):
-        """
-        Use this method to send invoices. On success, the sent Message is returned.
-        :param chat_id: Unique identifier for the target private chat
-        :param title: Product name
-        :param description: Product description
-        :param invoice_payload: Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use for your internal processes.
-        :param provider_token: Payments provider token, obtained via @Botfather
-        :param currency: Three-letter ISO 4217 currency code, see https://core.telegram.org/bots/payments#supported-currencies
-        :param prices: Price breakdown, a list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.)
-        :param start_parameter: Unique deep-linking parameter that can be used to generate this invoice when used as a start parameter
-        :param photo_url: URL of the product photo for the invoice. Can be a photo of the goods or a marketing image for a service. People like it better when they see what they are paying for.
-        :param photo_size: Photo size
-        :param photo_width: Photo width
-        :param photo_height: Photo height
-        :param need_name: Pass True, if you require the user's full name to complete the order
-        :param need_phone_number: Pass True, if you require the user's phone number to complete the order
-        :param need_email: Pass True, if you require the user's email to complete the order
-        :param need_shipping_address: Pass True, if you require the user's shipping address to complete the order
-        :param is_flexible: Pass True, if the final price depends on the shipping method
-        :param disable_notification: Sends the message silently. Users will receive a notification with no sound.
-        :param reply_to_message_id: If the message is a reply, ID of the original message
-        :param reply_markup: A JSON-serialized object for an inline keyboard. If empty, one 'Pay total price' button will be shown. If not empty, the first button must be a Pay button
-        :param provider_data:
-        :param timeout: timeout date int
-        :return:
-
-        Args:
-
-        """
         method_url = r'sendInvoice'
         payload = {'chat_id': chat_id, 'title': title, 'description': description, 'payload': invoice_payload,
                    'provider_token': provider_token, 'start_parameter': start_parameter, 'currency': currency,
@@ -702,15 +618,6 @@ class TelegramAction:
         return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
 
     async def answer_shipping_query(self, shipping_query_id: int, ok: bool, shipping_options=None, error_message=None):
-        """
-        If you sent an invoice requesting a shipping address and the parameter is_flexible was specified, the Bot API will send an Update with a shipping_query field to the bot. Use this method to reply to shipping queries. On success, True is returned.
-        :param token: Bot's token (you don't need to fill this)
-        :param shipping_query_id: Unique identifier for the query to be answered
-        :param ok: Specify True if delivery to the specified address is possible and False if there are any problems (for example, if delivery to the specified address is not possible)
-        :param shipping_options: Required if ok is True. A JSON-serialized array of available shipping options.
-        :param error_message: Required if ok is False. Error message in human readable form that explains why it is impossible to complete the order (e.g. "Sorry, delivery to your desired address is unavailable'). Telegram will display this message to the user.
-        :return:
-        """
         method_url = 'answerShippingQuery'
         payload = {'shipping_query_id': shipping_query_id, 'ok': ok}
         if shipping_options:
@@ -720,14 +627,6 @@ class TelegramAction:
         return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
 
     async def answer_pre_checkout_query(self, pre_checkout_query_id: int, ok: bool, error_message=None):
-        """
-        Once the user has confirmed their payment and shipping details, the Bot API sends the final confirmation in the form of an Update with the field pre_checkout_query. Use this method to respond to such pre-checkout queries. On success, True is returned. Note: The Bot API must receive an answer within 10 seconds after the pre-checkout query was sent.
-        :param token: Bot's token (you don't need to fill this)
-        :param pre_checkout_query_id: Unique identifier for the query to be answered
-        :param ok: Specify True if everything is alright (goods are available, etc.) and the bot is ready to proceed with the order. Use False if there are any problems.
-        :param error_message: Required if ok is False. Error message in human readable form that explains the reason for failure to proceed with the checkout (e.g. "Sorry, somebody just bought the last of our amazing black T-shirts while you were busy filling out your payment details. Please choose a different color or garment!"). Telegram will display this message to the user.
-        :return:
-        """
         method_url = 'answerPreCheckoutQuery'
         payload = {'pre_checkout_query_id': pre_checkout_query_id, 'ok': ok}
         if error_message:
@@ -736,18 +635,6 @@ class TelegramAction:
 
     async def answer_callback_query(self, callback_query_id: int, text: str = None, show_alert: bool = None,
                                     url: str = None, cache_time: int = None):
-        """
-        Use this method to send answers to callback queries sent from inline keyboards. The answer will be displayed to the user as a notification at the top of the chat screen or as an alert. On success, True is returned.
-        Alternatively, the user can be redirected to the specified Game URL. For this option to work, you must first create a game for your bot via BotFather and accept the terms. Otherwise, you may use links like telegram.me/your_bot?start=XXXX that open your bot with a parameter.
-        :param token: Bot's token (you don't need to fill this)
-        :param callback_query_id: Unique identifier for the query to be answered
-        :param text: (Optional) Text of the notification. If not specified, nothing will be shown to the user, 0-200 characters
-        :param show_alert: (Optional) If true, an alert will be shown by the client instead of a notification at the top of the chat screen. Defaults to false.
-        :param url: (Optional) URL that will be opened by the user's client. If you have created a Game and accepted the conditions via @Botfather, specify the URL that opens your game – note that this will only work if the query comes from a callback_game button.
-        Otherwise, you may use links like telegram.me/your_bot?start=XXXX that open your bot with a parameter.
-        :param cache_time: (Optional) The maximum amount of time in seconds that the result of the callback query may be cached client-side. Telegram apps will support caching starting in version 3.14. Defaults to 0.
-        :return:
-        """
         method_url = 'answerCallbackQuery'
         payload = {'callback_query_id': callback_query_id}
         if text:
@@ -863,9 +750,52 @@ class TelegramAction:
             payload['connect-timeout'] = timeout
         return await self._telegram_core.method_async(method_name=method_url, args=payload)
 
-    async def stop_poll(self, chat_id: int , message_id: int, reply_markup=None):
+    async def stop_poll(self, chat_id: int, message_id: int, reply_markup=None):
         method_url = r'stopPoll'
         payload = {'chat_id': str(chat_id), 'message_id': message_id}
         if reply_markup:
             payload['reply_markup'] = self._convert_markup(reply_markup)
         return await self._telegram_core.method_async(method_name=method_url, args=payload)
+
+    @staticmethod
+    def _convert_markup(markup):
+        # TODO check for isinstance(markup, types.JsonSerializable): return markup.to_json() else return markup
+        return markup.to_json()
+
+    @staticmethod
+    def _convert_input_media_array(array):
+        media = []
+        files = {}
+        for input_media in array:
+            # TODO if isinstance(input_media, types.InputMedia):
+            media_dict = input_media.to_dict()
+            if media_dict['media'].startswith('attach://'):
+                key = media_dict['media'].replace('attach://', '')
+                files[key] = input_media.media
+            media.append(media_dict)
+        return json.dumps(media), files
+
+    @staticmethod
+    def get_method_by_type(data_type: str):
+        if data_type == 'document':
+            return r'sendDocument'
+        if data_type == 'sticker':
+            return r'sendSticker'
+
+    @staticmethod
+    def _convert_list_json_serializable(results):
+        ret = ''
+        for r in results:
+            # TODO check for isinstance(markup, types.JsonSerializable):
+            if True:
+                ret = ret + r.to_json() + ','
+        if len(ret) > 0:
+            ret = ret[:-1]
+        return '[' + ret + ']'
+
+    @staticmethod
+    def _convert_input_media(media):
+        # TODO if isinstance(media, types.InputMedia):
+        if True:
+            return media._convert_input_media()
+        # return None, None
