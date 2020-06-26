@@ -27,7 +27,6 @@ class TelegramChatEventSender:
         self.chat_username = self.chat_json['username']
         self.chat_first_name = self.chat_json['type']
 
-        self.date_int32: int = self.message['date']
-        self.date: datetime = datetime.timedelta(self.date_int32)
+        self.date_int32: int = self.message['date']  # TODO transform ot datetime
 
         self.text_msg = self.message['text']

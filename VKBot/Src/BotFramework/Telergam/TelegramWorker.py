@@ -29,10 +29,11 @@ class TelegramWorker:
     async def start_handle(self):
         async for event in self._telegram_listener.listen():
             await self.__handle_any_event(event)
-            if self.__valid(event):
-                telegram_event = TelegramChatEventSender(event)
-                await self.__find_telegram_msg_handler_invoke(telegram_event)
-                await self.__handle_any_message(event)
+            if 'update_id' in event and 'message' in event:
+                if self.__valid(event['message']):
+                    telegram_event = TelegramChatEventSender(event)
+                    await self.__find_telegram_msg_handler_invoke(telegram_event)
+                    await self.__handle_any_message(event)
 
     async def __handle_any_event(self, event: dict):
         for _handler in self._any_event_handlers:
@@ -48,6 +49,7 @@ class TelegramWorker:
                 msg_handle = _handler[1].split('=')[1].replace('\"', '').replace(' ', '').replace('\'', '')
                 if msg_handle == telegram_event.text_msg:
                     await getattr(self._user_msg_controller, _handler[0])(telegram_event)
+                    break
             elif 'first_word' in _handler[1]:  # explicit first-word handler
                 word_handle = _handler[1].split("first_word=")[1].replace(' ', '').split(",")[0] \
                     .replace('"', '').replace("'", "")
@@ -58,17 +60,19 @@ class TelegramWorker:
                         word_require_len = _handler[1].split("words_length=")[1].replace(' ', '').split(",")[0]
                         if int(word_require_len) == len(words_split):
                             await getattr(self._user_msg_controller, _handler[0])(telegram_event)
+                            break
                     else:
                         await getattr(self._user_msg_controller, _handler[0])(telegram_event)
+                        break
 
             elif 'first_word' in _handler[1] and _handler in self._user_msg_handlers:
                 raise Exception("Cannot explicit cast part of message and message in one expression!")
-            break
+
 
     @staticmethod
     def __valid(event: dict):
-        return 'update_id' in event and \
-               'message' in event and \
+        return 'message_id' in event and \
+                'from' in event and \
                'chat' in event and \
                'date' in event and \
                 'text' in event
