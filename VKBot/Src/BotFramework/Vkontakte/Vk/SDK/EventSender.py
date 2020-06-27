@@ -7,7 +7,7 @@ class VkEvent:
         self.type: str = vk_json['type']
         self.obj: dict = vk_json['object']
         self.event_id: str = vk_json['event_id']
-        self.group_event: int = vk_json['event_id']
+        self.group_event: int = vk_json['group_event']
 
     def is_typing_event(self):
         return self.type == 'message_typing_state'

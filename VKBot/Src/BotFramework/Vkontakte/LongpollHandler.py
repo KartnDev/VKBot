@@ -1,5 +1,5 @@
 from Src.BotFramework.Utils.ReflectionUtils import methods_with_decorator
-from Src.BotFramework.Vkontakte.Vk.SDK.EventSender import ChatEventSender, UserEventSender, VkEventSender
+from Src.BotFramework.Vkontakte.Vk.SDK.EventSender import VkEvent, VkNewMsgChatEvent
 from Src.Controllers.ControllerActioner import ControllerAction
 from Src.Controllers.VkControllers.AnyController import AnyController
 from Src.Controllers.VkControllers.ChatMsgController import ChatMsgController
@@ -49,29 +49,31 @@ class LongPollHandler:
 
     async def start_handle(self):
         for event in self._vk_listener.listen():
-            if 'type' in event and 'object' in event:
-                await self.__handle_any_event(event)
-                if event['type'] == 'message_new':
-                    await self.__handle_any_message(event)  # any message
+            print(event)
+            if 'type' in event and 'object' in event and 'event_id' in event and 'group_event' in event:
+                vk_event = VkEvent(event)
+                await self.__handle_any_event(vk_event)
+                if vk_event.is_message_new_event():
+                    await self.__handle_any_message(vk_event)  # any message
                     obj = event['object']
                     if 'message' in obj:
                         msg = obj['message']
                         if 'from_id' in msg and 'text' in msg and 'peer_id' in msg and 'attachments' in msg:
-                            if msg['peer_id'] > int(2E9):  # from_chat
-                                await self.__find_chat_handler_invoke(msg)
-                            elif msg['peer_id'] < int(2E9):  # from user
-                                await self.__find_user_msg_handler_invoke(msg)
+                            if vk_event.is_message_new_event():
+                                new_message_event = vk_event.to_message_new_event()
+                                if new_message_event.from_chat():
+                                    await self.__find_chat_handler_invoke(new_message_event.to_chat_new_msg_event())
+                                elif new_message_event.from_user():
+                                    await self.__find_user_msg_handler_invoke(new_message_event.to_user_new_msg_event())
 
     # region any_handlers
 
-    async def __handle_any_message(self, msg: dict):
+    async def __handle_any_message(self, vk_event: VkEvent):
         for _handler in self._any_message_handlers:
-            vk_event = VkEventSender(msg)
             await getattr(self._any_controller, _handler[0])(vk_event)
 
-    async def __handle_any_event(self, event: dict):
+    async def __handle_any_event(self, vk_event: VkEvent):
         for _handler in self._any_event_handlers:
-            vk_event = VkEventSender(event)
             await getattr(self._any_controller, _handler[0])(vk_event)
 
     # end region any_handlers
@@ -79,25 +81,25 @@ class LongPollHandler:
     # region chat_handlers
 
     # TODO test it
-    async def __find_chat_handler_invoke(self, msg: dict):
+    async def __find_chat_handler_invoke(self, chat_event: VkNewMsgChatEvent):
         for _handler in self._chat_handlers:
             if 'msg' in _handler[1]:  # if we wont to explicit use all message
                 msg_handle = _handler[1].split('=')[1].replace('\"', '').replace(' ', '').replace('\'', '')
 
-                if msg_handle == msg['text']:
-                    await self.__check_for_user_annotation_and_invoke(_handler, msg['from_id'], msg)
+                if msg_handle == chat_event.msg_text:
+                    await self.__check_for_chat_annotation_and_invoke(_handler, _handler[0], chat_event)
             elif 'first_word' in _handler[1]:  # explicit first-word handler
                 word_handle = _handler[1].split("first_word=")[1].replace(' ', '').split(",")[0] \
                     .replace('"', '').replace("'", "")
 
-                words_split = msg['text'].split(" ")
+                words_split = chat_event.msg_text.split(" ")
                 if words_split[0] == word_handle:
                     if 'words_length' in _handler[1]:
                         word_require_len = _handler[1].split("words_length=")[1].replace(' ', '').split(",")[0]
                         if int(word_require_len) == len(words_split):
-                            await self.__check_for_chat_annotation_and_invoke(_handler, msg['from_id'], msg)
+                            await self.__check_for_chat_annotation_and_invoke(_handler, chat_event)
                     else:
-                        await self.__check_for_chat_annotation_and_invoke(_handler, msg['from_id'], msg)
+                        await self.__check_for_chat_annotation_and_invoke(_handler, chat_event)
 
             elif 'first_word' in _handler[1] and _handler in self._user_msg_handlers:
                 raise Exception("Cannot explicit cast part of message and message in one expression!")
@@ -185,21 +187,19 @@ class LongPollHandler:
             elif 'first_word' in _handler[1] and _handler in self._user_msg_handlers:
                 raise Exception("Cannot explicit cast part of message and message in one expression!")
 
-    async def __check_for_user_annotation_and_invoke(self, handler_handlable_msg: (str, str), user_id: int, message):
+    async def __check_for_user_annotation_and_invoke(self, fn_name: str, chat_event: VkNewMsgChatEvent):
 
-        if handler_handlable_msg[0] in list(item[0] for item in self._user_auth_handlers):
-            await self.__invoke_auth_handler_user(user_id, message, handler_handlable_msg)
+        if chat_event.msg_text in list(item[0] for item in self._user_auth_handlers):
+            await self.__invoke_auth_handler_user(fn_name, chat_event)
 
-        elif handler_handlable_msg[0] in list(item[0] for item in self._user_required_level_handlers):
-            await self.__invoke_required_lvl_handler_user(user_id, message, handler_handlable_msg)
+        elif fn_name in list(item[0] for item in self._user_required_level_handlers):
+            await self.__invoke_required_lvl_handler_user(fn_name, chat_event)
 
         else:
-            await self.__invoke_base_handler_user(user_id, message, handler_handlable_msg)
+            await self.__invoke_base_handler_user(fn_name, chat_event)
 
-    async def __invoke_auth_handler_user(self, user_id: int, message: dict, handler_handlable_msg: (str, str)):
-        if self._user_wrr.contains(user_id):
-            user_msg_event = UserEventSender(message['from_id'], {"message": message['text'],
-                                                                  "attachment": message['attachments']}, message)
+    async def __invoke_auth_handler_user(self, fn_name: str, chat_event: VkNewMsgChatEvent):
+        if self._user_wrr.contains(chat_event.msg_from):
             await getattr(self._user_msg_controller, handler_handlable_msg[0])(user_msg_event)
 
         else:
