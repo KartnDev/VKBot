@@ -11,9 +11,9 @@ class VkAction:
     def send_message(self, type_id, id: int, message: str = None, attachment=None, keyboard=None):
         try:
             return self._vk_api_core.method('messages.send', {type_id: id, 'message': message,
-                                                             'random_id': random.randint(-2147483648, +2147483648),
-                                                             'attachment': attachment,
-                                                             'keyboard': keyboard})
+                                                              'random_id': random.randint(-2147483648, +2147483648),
+                                                              'attachment': attachment,
+                                                              'keyboard': keyboard})
         except Exception as ex:
             logging.info(ex)
             return {"Error": 1}

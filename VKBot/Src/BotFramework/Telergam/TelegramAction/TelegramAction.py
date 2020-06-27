@@ -76,7 +76,7 @@ class TelegramAction:
             payload['connect-timeout'] = timeout
         return await self._telegram_core.method_async(method_name=method_url, args=payload)
 
-    def send_dice(self, chat_id: int,
+    async def send_dice(self, chat_id: int,
                   emoji=None, disable_notification=None, reply_to_message_id: int = None,
                   reply_markup=None, timeout=None):
         method_url = r'sendDice'
@@ -461,7 +461,7 @@ class TelegramAction:
         payload = {'chat_id': chat_id, 'permissions': permissions.to_json()}
         return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
 
-    def export_chat_invite_link(self, chat_id: int):
+    async def export_chat_invite_link(self, chat_id: int):
         method_url = 'exportChatInviteLink'
         payload = {'chat_id': chat_id}
         return await self._telegram_core.method_async(method_name=method_url, args=payload, method='post')
