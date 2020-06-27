@@ -1,5 +1,5 @@
 from Src.BotFramework.Utils.ReflectionUtils import methods_with_decorator
-from Src.BotFramework.Vkontakte.Vk.SDK.EventSender import VkEvent, VkNewMsgChatEvent
+from Src.BotFramework.Vkontakte.Vk.SDK.EventSender import VkEvent, VkNewMsgChatEvent, VkNewMsgUserEvent
 from Src.Controllers.ControllerActioner import ControllerAction
 from Src.Controllers.VkControllers.AnyController import AnyController
 from Src.Controllers.VkControllers.ChatMsgController import ChatMsgController
@@ -101,7 +101,7 @@ class LongPollHandler:
                     else:
                         await self.__check_for_chat_annotation_and_invoke(_handler[0], chat_event)
 
-            elif 'first_word' in _handler[1] and _handler in self._user_msg_handlers:
+            elif 'first_word' in _handler[1] and _handler in self._chat_handlers:
                 raise Exception("Cannot explicit cast part of message and message in one expression!")
             break
 
@@ -152,69 +152,66 @@ class LongPollHandler:
     # region for user_messages_handler
 
     # TODO test it
-    async def __find_user_msg_handler_invoke(self, msg: dict):
+    async def __find_user_msg_handler_invoke(self, user_event: VkNewMsgUserEvent):
         for _handler in self._user_msg_handlers:
             if 'msg' in _handler[1]:  # if we wont to explicit use all message
                 msg_handle = _handler[1].split('=')[1].replace('\"', '').replace(' ', '').replace('\'', '')
 
-                if msg_handle == msg['text']:
-                    await self.__check_for_user_annotation_and_invoke(_handler, msg['from_id'], msg)
+                if msg_handle == user_event.msg_from:
+                    await self.__check_for_user_annotation_and_invoke(_handler[0], user_event)
             elif 'first_word' in _handler[1]:  # explicit first-word handler
                 word_handle = _handler[1].split("first_word=")[1].replace(' ', '').split(",")[0] \
                     .replace('"', '').replace("'", "")
 
-                words_split = msg['text'].split(" ")
+                words_split = user_event.msg_text.split(" ")
                 if words_split[0] == word_handle:
                     if 'words_length' in _handler[1]:
                         word_require_len = _handler[1].split("words_length=")[1].replace(' ', '').split(",")[0]
                         if int(word_require_len) == len(words_split):
-                            await self.__check_for_user_annotation_and_invoke(_handler, msg['from_id'], msg)
+                            await self.__check_for_user_annotation_and_invoke(_handler[0], user_event)
                     else:
-                        await self.__check_for_user_annotation_and_invoke(_handler, msg['from_id'], msg)
+                        await self.__check_for_user_annotation_and_invoke(_handler[0], user_event)
 
             elif 'first_word' in _handler[1] and _handler in self._user_msg_handlers:
                 raise Exception("Cannot explicit cast part of message and message in one expression!")
 
-    async def __check_for_user_annotation_and_invoke(self, fn_name: str, chat_event: VkNewMsgChatEvent):
+    async def __check_for_user_annotation_and_invoke(self, fn_name: str, user_event: VkNewMsgUserEvent):
 
-        if chat_event.msg_text in list(item[0] for item in self._user_auth_handlers):
-            await self.__invoke_auth_handler_user(fn_name, chat_event)
+        if user_event.msg_text in list(item[0] for item in self._user_auth_handlers):
+            await self.__invoke_auth_handler_user(fn_name, user_event)
 
         elif fn_name in list(item[0] for item in self._user_required_level_handlers):
-            await self.__invoke_required_lvl_handler_user(fn_name, chat_event)
+            await self.__invoke_required_lvl_handler_user(fn_name, user_event)
 
         else:
-            await self.__invoke_base_handler_user(fn_name, chat_event)
+            await self.__invoke_base_handler_user(fn_name, user_event)
 
-    async def __invoke_auth_handler_user(self, fn_name: str, chat_event: VkNewMsgChatEvent):
-        if self._user_wrr.contains(chat_event.msg_from):
-            await getattr(self._user_msg_controller, handler_handlable_msg[0])(user_msg_event)
+    async def __invoke_auth_handler_user(self, fn_name: str, user_event: VkNewMsgUserEvent):
+        if self._user_wrr.contains(user_event.msg_from):
+            await getattr(self._user_msg_controller, fn_name)(user_event)
 
         else:
-            self._send_call_error_to_user(user_id, 'комманда доступна только для зарегестрированных пользователей')
+            self._send_call_error_to_user(user_event.msg_from, 'комманда доступна только для ' +
+                                                               'зарегестрированных пользователей')
 
-    async def __invoke_required_lvl_handler_user(self, user_id: int, message: dict, handler_handlable_msg: (str, str)):
-        curr_u_lvl = self._user_wrr.first_or_default(user_id)
+    async def __invoke_required_lvl_handler_user(self, fn_name: str, user_event: VkNewMsgUserEvent):
+        curr_u_lvl = self._user_wrr.first_or_default(user_event.msg_from)
         if curr_u_lvl is not None:
             curr_u_lvl = curr_u_lvl[1]
         else:
-            self._send_call_error_to_user(user_id, 'комманда доступна только для зарегестрированных ' +
+            self._send_call_error_to_user(user_event.msg_from, 'комманда доступна только для зарегестрированных ' +
                                           'пользователей c повышенным уровнем доступа')
 
         lvl_handle = [v for i, v in enumerate(self._user_required_level_handlers)
-                      if v[0] == handler_handlable_msg[0]][0]
+                      if v[0] == fn_name][0]
         needed_lvl = int(lvl_handle[1].split('=')[1])
         if curr_u_lvl >= needed_lvl:
-            user_msg_event = UserEventSender(message['from_id'], {"message": message['text'],
-                                                                  "attachment": message['attachments']}, message)
-            await getattr(self._user_msg_controller, handler_handlable_msg[0])(user_msg_event)
+            await getattr(self._user_msg_controller, fn_name)(user_event)
         else:
-            self._send_call_error_to_user(user_id, """Нет доступа к команде: required lvl = {0},
+            self._send_call_error_to_user(user_event.msg_from, """Нет доступа к команде: required lvl = {0},
                                             {1} taken, {0} > {1}""".format(needed_lvl, curr_u_lvl))
 
-    async def __invoke_base_handler_user(self, user_id: int, message: dict, handler_handlable_msg: (str, str)):
-        user_msg_event = UserEventSender(message['from_id'], {"message": message['text'],
-                                                              "attachment": message['attachments']}, message)
-        await getattr(self._user_msg_controller, handler_handlable_msg[0])(user_msg_event)
+    async def __invoke_base_handler_user(self, fn_name: str, user_event: VkNewMsgUserEvent):
+        await getattr(self._user_msg_controller, fn_name)(user_event)
 
     # region end user_messages_handler
