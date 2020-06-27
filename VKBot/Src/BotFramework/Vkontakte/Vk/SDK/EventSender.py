@@ -1,50 +1,6 @@
 import warnings
 
 
-class ChatEventSender:
-    def __init__(self, chat_id: int, user_sender_id: int, msg_event: dict, all_data_event: dict = None):
-        """
-        :param chat_id: int > 0
-        :param user_sender_id: vk_id > 0
-        :param msg_event: dictionary like
-        {
-            "message": "some_message" or None,
-            "attachment": "attachment" or None
-            etc
-        }
-        """
-        self.chat_id = chat_id
-        self.user_id = user_sender_id
-        self.event = msg_event
-        if all_data_event is not None:
-            self.all_data_event = all_data_event
-
-
-class UserEventSender:
-    def __init__(self, user_sender_id: int, msg_event: dict, all_data_event: dict = None):
-        """
-        :param user_sender_id: vk_id > 0
-        :param msg_event: dictionary like
-        {
-            "message": "some_message" or None,
-            "attachment": "attachment" or None
-            etc
-        }
-        """
-
-        self.user_id = user_sender_id
-        self.event = msg_event
-        if all_data_event is not None:
-            self.all_data_event = all_data_event
-
-
-#   TODO reformat it with many data
-
-class VkEventSender:
-    def __init__(self, all_data_event: dict):
-        self.all_data_event = all_data_event
-
-
 class VkEvent:
     def __init__(self, vk_json: dict):
         self._vk_json = vk_json
@@ -56,7 +12,7 @@ class VkEvent:
     def is_typing_event(self):
         return self.type == 'message_typing_state'
 
-    def to_msg_typing_event(self) -> VkMsgTypingEvent:
+    def to_msg_typing_event(self):
         if self.is_typing_event():
             return VkMsgTypingEvent(self._vk_json)
         else:
@@ -66,6 +22,8 @@ class VkEvent:
         return self.type == 'message_new'
 
     def to_message_new_event(self):
+        if self.is_message_new_event():
+            return _VkMsgNewEvent(self._vk_json)
 
 
 class VkMsgTypingEvent(VkEvent):
@@ -75,7 +33,8 @@ class VkMsgTypingEvent(VkEvent):
         self.from_id: int = self.obj['from_id']
         self.to_id: int = self.obj['to_id']
 
-class VkMsgNewEvent(VkEvent):
+
+class _VkMsgNewEvent(VkEvent):
     def __init__(self, vk_json: dict):
         super().__init__(vk_json)
         self.message_json: dict = self.obj['message']
@@ -91,3 +50,33 @@ class VkMsgNewEvent(VkEvent):
         self.msg_random_id: int = self.message_json['random_id']
         self.msg_attachments: list = self.message_json['attachments']
         self.msg_is_hidden: bool = self.message_json['is_hidden']
+
+        if 'client_info' in self.obj:
+            self.client_info_json: dict = self.obj['client_info']
+            self.button_actions: list = self.client_info_json['button_actions']
+            self.inline_keyboard: bool = self.client_info_json['inline_keyboard']
+            self.lang_id: int = self.client_info_json['lang_id']
+
+    def from_chat(self) -> bool:
+        return self.msg_peer_id > int(2E9)
+
+    def from_user(self) -> bool:
+        return self.msg_peer_id < int(2E9)
+
+    def to_chat_new_msg_event(self):
+        if self.from_chat():
+            return VkNewMsgChatEvent(self._vk_json)
+
+    def to_user_new_msg_event(self):
+        if self.from_chat():
+            return VkNewMsgUserEvent(self._vk_json)
+
+
+class VkNewMsgChatEvent(_VkMsgNewEvent):
+    def __init__(self, vk_json: dict):
+        super().__init__(vk_json)
+
+
+class VkNewMsgUserEvent(_VkMsgNewEvent):
+    def __init__(self, vk_json: dict):
+        super().__init__(vk_json)
