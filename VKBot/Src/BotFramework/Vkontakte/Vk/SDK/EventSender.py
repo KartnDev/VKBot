@@ -7,7 +7,7 @@ class VkEvent:
         self.type: str = vk_json['type']
         self.obj: dict = vk_json['object']
         self.event_id: str = vk_json['event_id']
-        self.group_event: int = vk_json['group_event']
+        self.group_event: int = vk_json['group_id']
 
     def is_typing_event(self):
         return self.type == 'message_typing_state'
@@ -39,7 +39,7 @@ class _VkMsgNewEvent(VkEvent):
         super().__init__(vk_json)
         self.message_json: dict = self.obj['message']
         self.msg_date: int = self.message_json['date']
-        self.msg_from: int = self.message_json['from_id']
+        self.msg_from_id: int = self.message_json['from_id']
         self.msg_id: int = self.message_json['id']
         self.msg_out: int = self.message_json['out']
         self.msg_peer_id: int = self.message_json['peer_id']
@@ -68,15 +68,18 @@ class _VkMsgNewEvent(VkEvent):
             return VkNewMsgChatEvent(self._vk_json)
 
     def to_user_new_msg_event(self):
-        if self.from_chat():
+        if self.from_user():
             return VkNewMsgUserEvent(self._vk_json)
 
 
 class VkNewMsgChatEvent(_VkMsgNewEvent):
     def __init__(self, vk_json: dict):
         super().__init__(vk_json)
+        self.chat_id = self.msg_peer_id - int(2E9)
+        self.user_id = self.msg_from_id
 
 
 class VkNewMsgUserEvent(_VkMsgNewEvent):
     def __init__(self, vk_json: dict):
         super().__init__(vk_json)
+        self.user_id = self.msg_from_id

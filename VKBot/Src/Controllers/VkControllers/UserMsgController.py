@@ -13,7 +13,9 @@ class UserMsgController:
     @HandleMessage(msg="!привет")
     async def handle_hello(self, event_sender: VkNewMsgUserEvent):
         print("Hello form: " + str(event_sender.user_id))
-        self.acting.vk_action.send_message(type_id="user_id", id=event_sender.user_id, message="Здорово очередняра")
+        self.acting.vk_action.send_message(type_id="user_id",
+                                           id=event_sender.user_id,
+                                           message="Здорово очередняра")
 
     @Authorized()
     @HandleMessage(msg="!status")

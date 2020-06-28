@@ -2,7 +2,7 @@
 * THIS CONTROLLER FOR @ANY_EVENT and @ANY_MESSAGE                                            *
 * DONT USE IT TOO MUCH                                                                       *
 *******************************************************************************************"""
-from Src.BotFramework.Vkontakte.Vk.SDK.EventSender import VkEventSender, VkEvent
+from Src.BotFramework.Vkontakte.Vk.SDK.EventSender import VkEvent
 from Src.BotFramework.Vkontakte.Vk.SDK.VkAnnotationSDK import InvokeOnAnyMessage, InvokeOnAnyEvent
 from Src.Controllers.ControllerActioner import ControllerAction
 

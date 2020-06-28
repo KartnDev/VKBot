@@ -49,8 +49,7 @@ class LongPollHandler:
 
     async def start_handle(self):
         for event in self._vk_listener.listen():
-            print(event)
-            if 'type' in event and 'object' in event and 'event_id' in event and 'group_event' in event:
+            if 'type' in event and 'object' in event and 'group_id' in event and 'event_id' in event:
                 vk_event = VkEvent(event)
                 await self.__handle_any_event(vk_event)
                 if vk_event.is_message_new_event():
@@ -88,6 +87,7 @@ class LongPollHandler:
 
                 if msg_handle == chat_event.msg_text:
                     await self.__check_for_chat_annotation_and_invoke(_handler[0], chat_event)
+                    break
             elif 'first_word' in _handler[1]:  # explicit first-word handler
                 word_handle = _handler[1].split("first_word=")[1].replace(' ', '').split(",")[0] \
                     .replace('"', '').replace("'", "")
@@ -98,25 +98,25 @@ class LongPollHandler:
                         word_require_len = _handler[1].split("words_length=")[1].replace(' ', '').split(",")[0]
                         if int(word_require_len) == len(words_split):
                             await self.__check_for_chat_annotation_and_invoke(_handler[0], chat_event)
+                            break
                     else:
                         await self.__check_for_chat_annotation_and_invoke(_handler[0], chat_event)
-
+                        break
             elif 'first_word' in _handler[1] and _handler in self._chat_handlers:
                 raise Exception("Cannot explicit cast part of message and message in one expression!")
-            break
 
     async def __check_for_chat_annotation_and_invoke(self, fn_name: str, chat_event: VkNewMsgChatEvent):
-        if fn_name[0] in list(item[0] for item in self._chat_auth_handlers):
+        if fn_name in list(item[0] for item in self._chat_auth_handlers):
             await self.__invoke_auth_handler(fn_name, chat_event)
 
-        elif fn_name[0] in list(item[0] for item in self._chat_required_level_handlers):
+        elif fn_name in list(item[0] for item in self._chat_required_level_handlers):
             await self.__invoke_required_lvl_handler(fn_name, chat_event)
 
         else:
             await self.__invoke_base_handler(fn_name, chat_event)
 
     async def __invoke_auth_handler(self, fn_name: str, chat_event: VkNewMsgChatEvent):
-        if self.is_user_registered(chat_event.msg_from):
+        if self.is_user_registered(chat_event.msg_from_id):
             await getattr(self._chat_controller, fn_name)(chat_event)
         else:
             self._send_call_error_chat(chat_event.msg_peer_id - int(2E9),  # TODO refactor it
@@ -125,7 +125,7 @@ class LongPollHandler:
                                           пользователей""")
 
     async def __invoke_required_lvl_handler(self, fn_name: str, chat_event: VkNewMsgChatEvent):
-        curr_u_lvl = self._user_wrr.first_or_default(chat_event.msg_from)
+        curr_u_lvl = self._user_wrr.first_or_default(chat_event.msg_from_id)
         if curr_u_lvl is not None:
             curr_u_lvl = curr_u_lvl[1]
         else:
@@ -157,7 +157,7 @@ class LongPollHandler:
             if 'msg' in _handler[1]:  # if we wont to explicit use all message
                 msg_handle = _handler[1].split('=')[1].replace('\"', '').replace(' ', '').replace('\'', '')
 
-                if msg_handle == user_event.msg_from:
+                if msg_handle == user_event.msg_text:
                     await self.__check_for_user_annotation_and_invoke(_handler[0], user_event)
             elif 'first_word' in _handler[1]:  # explicit first-word handler
                 word_handle = _handler[1].split("first_word=")[1].replace(' ', '').split(",")[0] \
@@ -177,7 +177,7 @@ class LongPollHandler:
 
     async def __check_for_user_annotation_and_invoke(self, fn_name: str, user_event: VkNewMsgUserEvent):
 
-        if user_event.msg_text in list(item[0] for item in self._user_auth_handlers):
+        if fn_name in list(item[0] for item in self._user_auth_handlers):
             await self.__invoke_auth_handler_user(fn_name, user_event)
 
         elif fn_name in list(item[0] for item in self._user_required_level_handlers):
@@ -187,19 +187,19 @@ class LongPollHandler:
             await self.__invoke_base_handler_user(fn_name, user_event)
 
     async def __invoke_auth_handler_user(self, fn_name: str, user_event: VkNewMsgUserEvent):
-        if self._user_wrr.contains(user_event.msg_from):
+        if self._user_wrr.contains(user_event.msg_from_id):
             await getattr(self._user_msg_controller, fn_name)(user_event)
 
         else:
-            self._send_call_error_to_user(user_event.msg_from, 'комманда доступна только для ' +
+            self._send_call_error_to_user(user_event.msg_from_id, 'комманда доступна только для ' +
                                                                'зарегестрированных пользователей')
 
     async def __invoke_required_lvl_handler_user(self, fn_name: str, user_event: VkNewMsgUserEvent):
-        curr_u_lvl = self._user_wrr.first_or_default(user_event.msg_from)
+        curr_u_lvl = self._user_wrr.first_or_default(user_event.msg_from_id)
         if curr_u_lvl is not None:
             curr_u_lvl = curr_u_lvl[1]
         else:
-            self._send_call_error_to_user(user_event.msg_from, 'комманда доступна только для зарегестрированных ' +
+            self._send_call_error_to_user(user_event.msg_from_id, 'комманда доступна только для зарегестрированных ' +
                                           'пользователей c повышенным уровнем доступа')
 
         lvl_handle = [v for i, v in enumerate(self._user_required_level_handlers)
@@ -208,7 +208,7 @@ class LongPollHandler:
         if curr_u_lvl >= needed_lvl:
             await getattr(self._user_msg_controller, fn_name)(user_event)
         else:
-            self._send_call_error_to_user(user_event.msg_from, """Нет доступа к команде: required lvl = {0},
+            self._send_call_error_to_user(user_event.msg_from_id, """Нет доступа к команде: required lvl = {0},
                                             {1} taken, {0} > {1}""".format(needed_lvl, curr_u_lvl))
 
     async def __invoke_base_handler_user(self, fn_name: str, user_event: VkNewMsgUserEvent):

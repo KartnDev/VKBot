@@ -18,9 +18,6 @@ class ChatMsgController:
     @HandleMessage(msg="!Hello")
     async def handle_name(self, event_sender: VkNewMsgChatEvent):
         print("Сообщение пришло из чата id" + str(event_sender.chat_id))
-        print("Сообщение пришло от юзера id" + str(event_sender.user_id))
-        print("Текст сообщенияЖ :" + event_sender.event['message'])
-        print(event_sender.event['attachment'])
 
     @RequiredLvl(lvl=2)
     @HandleMessage(msg="!Bye")
@@ -34,11 +31,6 @@ class ChatMsgController:
         print(self.acting.vk_action.send_message_chat(event_sender.chat_id, "Ваш уровень " +
                                                       str(data.select_where('users',
                                                                             {'vk_id': event_sender.user_id})[0][1])))
-
-        print("Сообщение пришло из чата id" + str(event_sender.chat_id))
-        print("Сообщение пришло от юзера id" + str(event_sender.user_id))
-        print("Текст сообщенияЖ :" + event_sender.event['message'])
-        print(event_sender.event['attachment'])
 
     @HandleMessage(first_word="!ban")
     @RequiredLvl(lvl=1)
