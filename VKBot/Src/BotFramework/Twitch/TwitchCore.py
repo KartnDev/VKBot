@@ -43,4 +43,3 @@ class TwitchCore:
         return await requests_async.request(url=url, method=method, json=json, files=files, headers=headers)
 
 
-
