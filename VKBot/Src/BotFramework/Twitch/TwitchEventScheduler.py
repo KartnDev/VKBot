@@ -3,6 +3,8 @@ import asyncio
 from Src.Controllers.ControllerActioner import ControllerAction
 from Src.Controllers.TwitchController.TwitchIsAliveController import TwitchIsAliveController
 
+from collections import deque
+
 
 class TwitchEventScheduler:
 
@@ -18,8 +20,22 @@ class TwitchEventScheduler:
         Args:
             time_sleep (sec): time to get new request to check is channel alive
         """
+
+        is_stream_deq = deque(self._handle_channels)
+        down_to_alive = []
+
         while True:
-            for item in self._handle_channels:
-                if self._twitch_action.is_channel_online(item):
-                    self._twitch_controller.invoke_when_channel_is_online(item)
+            for item in range(len(is_stream_deq)):
+                now_channel = is_stream_deq.popleft()
+                if self._twitch_action.is_channel_online(now_channel):
+                    await self._twitch_controller.invoke_when_channel_is_online(now_channel)
+                    down_to_alive.append(now_channel)
+                else:
+                    is_stream_deq.append(now_channel)
+
+                for channel in down_to_alive:
+                    if not self._twitch_action.is_channel_online(channel):
+                        is_stream_deq.append(channel)
+                        down_to_alive.remove(channel)
             await asyncio.sleep(time_sleep)
+
