@@ -9,30 +9,82 @@ class TwitchCore:
         self._V5_KRAKEN_URL = 'https://api.twitch.tv/kraken'
         self._NEW_HELIX_URL = 'https://api.twitch.tv/helix'
 
-    def kraken_request(self, method_name: str, uri_args: dict = None, method: str = 'get', json=None, files=None):
-        full_url = "{0}/{1}?{2}".format(self._V5_KRAKEN_URL, method_name, '&'.join("{0}={1}".format(key, uri_args[key])
-                                                                                   for key in uri_args))
-        return self._make_request(full_url, method, json, files)
+    # Kraken region
 
-    async def kraken_request_async(self, method_name: str, uri_args: dict = None,
-                                   method: str = 'get', json=None, files=None):
-        full_url = "{0}/{1}?{2}".format(self._V5_KRAKEN_URL, method_name, '&'.join("{0}={1}".format(key, uri_args[key])
-                                                                                   for key in uri_args))
-        return await self._make_async_request(full_url, method, json, files)
+    def kraken_request(self, method_name: str, uri_args: dict = None, headers_new: dict = None,
+                       method: str = 'get', json=None, files=None):
+        if uri_args is not None:
+            full_url = "{0}/{1}?{2}".format(self._V5_KRAKEN_URL,
+                                            method_name,
+                                            '&'.join("{0}={1}".format(key, uri_args[key]) for key in uri_args))
+        else:
+            full_url = "{0}/{1}".format(self._V5_KRAKEN_URL, method_name)
 
-    def helix_request(self, method_name: str, uri_args: dict = None, method: str = 'get', json=None, files=None):
-        full_url = "{0}/{1}?{2}".format(self._NEW_HELIX_URL, method_name,
-                                        '&'.join("{0}={1}".format(key, uri_args[key])for key in uri_args))
-        headers = {"Client-ID": self.client_id, "authorization": "Bearer {0}".format(self.oauth_token)}
+        headers = {"Client-ID": self.client_id,
+                   "Authorization": "OAuth {0}".format(self.oauth_token),
+                   "Accept": "application/vnd.twitchtv.v5+json"}
+
+        if headers_new is not None:
+            headers.update(headers_new)
         print(full_url)
-        return self._make_request(full_url, method, headers, json, files)
 
-    async def helix_request_async(self, method_name: str, uri_args: dict = None,
-                                  method: str = 'get', json=None, files=None):
-        full_url = "{0}/{1}?{2}".format(self._NEW_HELIX_URL, method_name, '&'.join("{0}={1}".format(key, uri_args[key])
-                                                                                   for key in uri_args))
+        return self._make_request(url=full_url, method=method, headers=headers, json=json, files=files)
+
+    async def kraken_request_async(self, method_name: str, uri_args: dict = None, headers_new: dict = None,
+                                   method: str = 'get', json=None, files=None):
+        if uri_args is not None:
+            full_url = "{0}/{1}?{2}".format(self._V5_KRAKEN_URL,
+                                            method_name,
+                                            '&'.join("{0}={1}".format(key, uri_args[key]) for key in uri_args))
+        else:
+            full_url = "{0}/{1}".format(self._V5_KRAKEN_URL, method_name)
+
+        headers = {"Client-ID": self.client_id,
+                   "Authorization": "OAuth {0}".format(self.oauth_token),
+                   "Accept": "application/vnd.twitchtv.v5+json"}
+
+        if headers_new is not None:
+            headers.update(headers_new)
+
+        return await self._make_async_request(url=full_url, method=method, headers=headers, json=json, files=files)
+
+    # Kraken region ends
+
+    # Helix region
+
+    def helix_request(self, method_name: str, uri_args: dict = None, headers_new: dict = None,
+                      method: str = 'get', json=None, files=None):
+        if uri_args is not None:
+            full_url = "{0}/{1}?{2}".format(self._NEW_HELIX_URL,
+                                            method_name,
+                                            '&'.join("{0}={1}".format(key, uri_args[key]) for key in uri_args))
+        else:
+            full_url = "{0}/{1}".format(self._V5_KRAKEN_URL, method_name)
+
         headers = {"Client-ID": self.client_id, "authorization": "Bearer {0}".format(self.oauth_token)}
-        return await self._make_async_request(full_url, method, headers, json, files)
+
+        if headers_new is not None:
+            headers.update(headers_new)
+
+        return self._make_request(url=full_url, method=method, headers=headers, json=json, files=files)
+
+    async def helix_request_async(self, method_name: str, uri_args: dict = None, headers_new: dict = None,
+                                  method: str = 'get', json=None, files=None):
+        if uri_args is not None:
+            full_url = "{0}/{1}?{2}".format(self._NEW_HELIX_URL,
+                                            method_name,
+                                            '&'.join("{0}={1}".format(key, uri_args[key]) for key in uri_args))
+        else:
+            full_url = "{0}/{1}".format(self._V5_KRAKEN_URL, method_name)
+
+        headers = {"Client-ID": self.client_id, "authorization": "Bearer {0}".format(self.oauth_token)}
+
+        if headers_new is not None:
+            headers.update(headers_new)
+
+        return await self._make_async_request(url=full_url, method=method, headers=headers, json=json, files=files)
+
+    # Helix region ends
 
     @staticmethod
     def _make_request(url, method: str = 'get', headers: dict = None, json=None, files=None):

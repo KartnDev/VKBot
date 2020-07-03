@@ -67,3 +67,47 @@ class TwitchAction:
         info = await self.get_stream_info_async(channel_name)
         return info.is_life
 
+    def get_channel_id_by_name(self, channel_name: str) -> int:
+        return self.get_stream_info(channel_name).id
+
+    async def get_channel_id_by_name_async(self, channel_name: str) -> int:
+        user = await self.get_stream_info_async(channel_name)
+        return user.id
+
+    def follow_channel(self, channel: int or str, user: int or str):
+
+        if isinstance(user, str):
+            user: int = self.get_channel_id_by_name(user)
+
+        if isinstance(channel, str):
+            channel: int = self.get_channel_id_by_name(channel)
+
+        method_path = "users/{0}/follows/channels/{1}".format(user, channel)
+
+        return self._twitch_api_core.kraken_request(method_name=method_path)
+
+    async def follow_channel_async(self, channel: int or str, user: int or str):
+
+        if isinstance(channel, str):
+            channel: int = await self.get_channel_id_by_name_async(channel)
+
+        if isinstance(user, str):
+            user: int = await self.get_channel_id_by_name_async(user)
+
+        method_path = "users/{0}/follows/channels/{1}".format(user, channel)
+
+        return self._twitch_api_core.kraken_request_async(method_name=method_path)
+
+
+twitch_core = TwitchCore('q6batx0epp608isickayubi39itsckt', 'llvgxwarxzng12wqnrsmo2zqvsuekl')
+
+act = TwitchAction(twitch_core)
+
+print(act.follow_channel("squillakilla", "KartonDCP"))
+
+
+
+
+
+
+
