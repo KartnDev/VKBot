@@ -74,6 +74,7 @@ class TwitchAction:
         user = await self.get_stream_info_async(channel_name)
         return user.id
 
+    @DeprecationWarning
     def follow_channel(self, channel: int or str, user: int or str):
 
         if isinstance(user, str):
@@ -84,8 +85,10 @@ class TwitchAction:
 
         method_path = "users/{0}/follows/channels/{1}".format(user, channel)
 
-        return self._twitch_api_core.kraken_request(method_name=method_path)
+        raise DeprecationWarning("it's not working flow")
+        #  return self._twitch_api_core.kraken_request(method_name=method_path)
 
+    @DeprecationWarning
     async def follow_channel_async(self, channel: int or str, user: int or str):
 
         if isinstance(channel, str):
@@ -95,8 +98,8 @@ class TwitchAction:
             user: int = await self.get_channel_id_by_name_async(user)
 
         method_path = "users/{0}/follows/channels/{1}".format(user, channel)
-
-        return self._twitch_api_core.kraken_request_async(method_name=method_path)
+        raise DeprecationWarning("it's not working flow")
+        # return self._twitch_api_core.kraken_request_async(method_name=method_path, method='put')
 
 
 twitch_core = TwitchCore('q6batx0epp608isickayubi39itsckt', 'llvgxwarxzng12wqnrsmo2zqvsuekl')
